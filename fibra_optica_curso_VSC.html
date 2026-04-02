@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redes de Fibra Óptica — Vladimir Sevillano Cruz</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-deep:#02050f;
+  --bg-card:#06111f;
+  --bg-panel:#0a1929;
+  --bg-element:#0f2337;
+  --accent:#00d4ff;
+  --accent2:#0099cc;
+  --accent3:#005f7a;
+  --green:#00e5a0;
+  --green2:#00a06e;
+  --amber:#ffb300;
+  --red:#ff4444;
+  --purple:#a855f7;
+  --text:#e0f0ff;
+  --text2:#7aadcc;
+  --text3:#3a5f78;
+  --border:#0f2337;
+  --border2:#1a3a55;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg-deep);color:var(--text);font-family:'Exo 2',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+
+/* Animated background grid */
+body::before{
+  content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+  background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0
+}
+
+/* TOPBAR */
+.topbar{
+  background:rgba(6,17,31,0.95);border-bottom:1px solid var(--accent3);
+  padding:0 24px;height:56px;display:flex;align-items:center;gap:16px;
+  position:sticky;top:0;z-index:100;backdrop-filter:blur(8px)
+}
+.logo{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--accent);letter-spacing:0.1em}
+.logo span{color:var(--text2);font-weight:400}
+.topbar-center{flex:1;display:flex;justify-content:center;gap:4px}
+.tab-btn{
+  font-family:'Exo 2',sans-serif;font-size:11px;font-weight:500;letter-spacing:0.05em;
+  padding:5px 12px;border-radius:4px;border:1px solid transparent;cursor:pointer;
+  background:transparent;color:var(--text3);transition:all 0.2s
+}
+.tab-btn:hover{color:var(--text2);border-color:var(--border2)}
+.tab-btn.active{background:var(--bg-element);color:var(--accent);border-color:var(--accent3)}
+.prog-wrap{display:flex;align-items:center;gap:8px;min-width:160px;justify-content:flex-end}
+.prog-text{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text3)}
+.prog-bar{width:80px;height:3px;background:var(--bg-element);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);transition:width 0.5s;width:0%}
+
+/* MAIN LAYOUT */
+.app-wrap{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 56px);position:relative;z-index:1}
+
+/* SIDEBAR */
+.sidebar{
+  background:rgba(6,17,31,0.8);border-right:1px solid var(--border2);
+  padding:20px 0;display:flex;flex-direction:column;gap:4px;
+  position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto
+}
+.sidebar-section{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.12em;padding:8px 16px 4px;text-transform:uppercase}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:8px 16px;cursor:pointer;
+  border-left:2px solid transparent;transition:all 0.2s;border-right:none
+}
+.nav-item:hover{background:rgba(0,212,255,0.04)}
+.nav-item.active{background:rgba(0,212,255,0.08);border-left-color:var(--accent)}
+.nav-item.locked{opacity:0.35;cursor:not-allowed}
+.nav-num{
+  width:24px;height:24px;border-radius:4px;background:var(--bg-element);
+  font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  border:1px solid var(--border2);transition:all 0.2s
+}
+.nav-item.active .nav-num{background:var(--accent3);color:var(--accent);border-color:var(--accent)}
+.nav-item.done .nav-num{background:rgba(0,229,160,0.15);color:var(--green);border-color:var(--green2)}
+.nav-label{font-size:11px;color:var(--text2);line-height:1.3}
+.nav-item.active .nav-label{color:var(--text)}
+.sidebar-divider{height:1px;background:var(--border2);margin:8px 16px}
+.final-nav{
+  margin:8px;border-radius:6px;background:linear-gradient(135deg,rgba(168,85,247,0.15),rgba(0,212,255,0.1));
+  border:1px solid rgba(168,85,247,0.4);padding:10px 12px;cursor:pointer;
+  display:flex;align-items:center;gap:8px;transition:all 0.2s
+}
+.final-nav:hover{background:linear-gradient(135deg,rgba(168,85,247,0.25),rgba(0,212,255,0.15))}
+.final-nav.active{border-color:var(--purple)}
+.final-icon{font-size:16px}
+.final-label{font-size:11px;color:var(--purple);font-weight:500}
+
+/* SCREEN CONTAINER */
+.screen-wrap{padding:0}
+.screen{display:none}
+.screen.visible{display:block}
+
+/* INSTRUCTOR SECTION */
+.instructor-section{
+  background:var(--bg-panel);border-bottom:1px solid var(--border2);
+  padding:24px 28px;display:flex;gap:20px;align-items:flex-start
+}
+.avatar-container{flex-shrink:0;position:relative;width:100px}
+.avatar-glow{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:110px;height:110px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,255,0.12),transparent 70%);
+  animation:pulse-glow 3s ease-in-out infinite
+}
+@keyframes pulse-glow{0%,100%{opacity:0.6;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}}
+.avatar-svg{width:100px;height:120px;position:relative;z-index:1}
+
+.bubble-wrap{flex:1;display:flex;flex-direction:column;gap:6px}
+.instructor-name{font-family:'Orbitron',monospace;font-size:11px;color:var(--accent);letter-spacing:0.08em;font-weight:500}
+.instructor-title{font-size:11px;color:var(--text3);margin-bottom:8px}
+.speech-bubble{
+  background:var(--bg-element);border:1px solid var(--border2);border-radius:0 8px 8px 8px;
+  padding:12px 16px;position:relative
+}
+.speech-bubble::before{
+  content:'';position:absolute;top:0;left:-1px;width:10px;height:10px;
+  border-top:1px solid var(--border2);border-left:1px solid var(--border2);
+  background:var(--bg-element)
+}
+.bubble-text{font-size:13px;color:var(--text2);line-height:1.7}
+.typing{display:inline-flex;gap:4px;align-items:center;margin-left:6px}
+.td{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:td 1.2s infinite}
+.td:nth-child(2){animation-delay:0.15s}.td:nth-child(3){animation-delay:0.3s}
+@keyframes td{0%,80%,100%{opacity:0.15}40%{opacity:1}}
+
+/* CONTENT AREA */
+.content-area{padding:24px 28px}
+.mod-tag{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:0.1em;margin-bottom:8px}
+.mod-title{font-family:'Orbitron',monospace;font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.2}
+.mod-sub{font-size:13px;color:var(--text3);margin-bottom:20px;font-family:'Share Tech Mono',monospace}
+.content-text{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:20px}
+
+/* VISUAL DEMO */
+.vis-box{background:var(--bg-card);border:1px solid var(--border2);border-radius:8px;padding:16px;margin-bottom:20px}
+.vis-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.1em;margin-bottom:12px;text-transform:uppercase}
+.fiber-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.fiber-name{font-size:11px;color:var(--text3);width:70px;flex-shrink:0;font-family:'Share Tech Mono',monospace}
+.fiber-track{flex:1;height:18px;background:#060d18;border-radius:9px;overflow:hidden;border:1px solid var(--border2);position:relative}
+.fp{position:absolute;top:50%;transform:translateY(-50%);border-radius:50%;animation:fp-move 2s linear infinite}
+@keyframes fp-move{0%{left:-8%}100%{left:108%}}
+.fiber-info{font-size:10px;width:90px;flex-shrink:0}
+
+/* CONCEPT GRID */
+.concept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:20px}
+.concept-card{
+  background:var(--bg-card);border:1px solid var(--border2);border-radius:8px;
+  padding:14px;text-align:center;transition:all 0.2s;cursor:default
+}
+.concept-card:hover{border-color:var(--accent3);background:var(--bg-element)}
+.cc-icon{margin-bottom:8px;display:flex;justify-content:center}
+.cc-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px}
+.cc-desc{font-size:11px;color:var(--text3);line-height:1.4}
+
+/* QUIZ */
+.quiz-section{
+  background:var(--bg-card);border:1px solid var(--border2);border-radius:8px;
+  padding:20px;margin-bottom:20px
+}
+.quiz-header{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.quiz-badge{
+  font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.1em;
+  padding:3px 8px;border-radius:3px;background:rgba(255,179,0,0.15);
+  color:var(--amber);border:1px solid rgba(255,179,0,0.3)
+}
+.quiz-count{font-size:12px;color:var(--text3);font-family:'Share Tech Mono',monospace}
+.quiz-q{font-size:14px;color:var(--text);margin-bottom:12px;line-height:1.6;font-weight:500}
+.quiz-opts{display:flex;flex-direction:column;gap:7px}
+.qopt{
+  background:var(--bg-element);border:1px solid var(--border2);border-radius:6px;
+  padding:10px 14px;font-size:13px;color:var(--text2);cursor:pointer;
+  transition:all 0.15s;text-align:left;display:flex;align-items:flex-start;gap:8px;width:100%
+}
+.qopt:hover:not(.disabled){background:rgba(0,212,255,0.07);border-color:var(--accent3);color:var(--text)}
+.qopt.correct{background:rgba(0,229,160,0.1);border-color:var(--green2);color:var(--green)}
+.qopt.wrong{background:rgba(255,68,68,0.1);border-color:rgba(255,68,68,0.5);color:var(--red)}
+.qopt.reveal{background:rgba(0,229,160,0.06);border-color:rgba(0,229,160,0.3);color:var(--green2)}
+.qopt.disabled{cursor:default}
+.ql{font-family:'Share Tech Mono',monospace;font-size:11px;opacity:0.6;flex-shrink:0;margin-top:1px}
+.quiz-fb{font-size:12px;margin-top:10px;padding:10px 14px;border-radius:6px;display:none;line-height:1.5}
+.quiz-fb.show{display:block}
+.quiz-fb.ok{background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.3);color:var(--green)}
+.quiz-fb.fail{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.3);color:var(--red)}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+.qnav-btn{
+  font-family:'Share Tech Mono',monospace;font-size:11px;padding:6px 14px;border-radius:4px;
+  border:1px solid var(--border2);background:var(--bg-element);color:var(--text2);cursor:pointer;transition:all 0.15s
+}
+.qnav-btn:hover:not(:disabled){border-color:var(--accent3);color:var(--accent)}
+.qnav-btn:disabled{opacity:0.3;cursor:default}
+.qprogress{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3)}
+
+/* SCORE CARD */
+.score-card{
+  display:none;background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.3);
+  border-radius:8px;padding:14px;margin-bottom:16px;align-items:center;gap:12px
+}
+.score-card.show{display:flex}
+.sc-icon{width:32px;height:32px;border-radius:50%;background:rgba(0,229,160,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sc-text{font-size:13px;color:var(--green)}
+
+/* NAV ROW */
+.nav-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 28px;border-top:1px solid var(--border2);background:rgba(6,17,31,0.9);
+  position:sticky;bottom:0;z-index:10;backdrop-filter:blur(6px)
+}
+.navbtn{
+  font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:0.05em;
+  padding:8px 20px;border-radius:4px;border:1px solid var(--border2);
+  background:var(--bg-element);color:var(--text2);cursor:pointer;transition:all 0.2s
+}
+.navbtn:hover:not(:disabled){border-color:var(--accent3);color:var(--accent)}
+.navbtn.primary{background:rgba(0,212,255,0.12);border-color:var(--accent);color:var(--accent)}
+.navbtn.primary:hover{background:rgba(0,212,255,0.2)}
+.navbtn:disabled{opacity:0.25;cursor:default}
+.dots{display:flex;gap:6px;align-items:center}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--bg-element);border:1px solid var(--border2);transition:all 0.3s}
+.dot.active{background:var(--accent);border-color:var(--accent);box-shadow:0 0 6px var(--accent)}
+.dot.done{background:var(--green2);border-color:var(--green)}
+
+/* FINAL EXAM */
+.exam-hero{
+  background:var(--bg-panel);border-bottom:1px solid rgba(168,85,247,0.3);
+  padding:32px 28px;text-align:center
+}
+.exam-badge-wrap{display:flex;justify-content:center;margin-bottom:16px}
+.exam-badge{
+  font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.15em;
+  padding:4px 14px;border-radius:3px;background:rgba(168,85,247,0.15);
+  color:var(--purple);border:1px solid rgba(168,85,247,0.4)
+}
+.exam-title{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px}
+.exam-sub{font-size:13px;color:var(--text3);max-width:500px;margin:0 auto 16px}
+.exam-stats{display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
+.estat{background:var(--bg-element);border:1px solid var(--border2);border-radius:6px;padding:10px 16px;text-align:center;min-width:80px}
+.estat-val{font-family:'Orbitron',monospace;font-size:18px;font-weight:700;color:var(--accent)}
+.estat-label{font-size:10px;color:var(--text3);margin-top:2px;font-family:'Share Tech Mono',monospace}
+
+.exam-area{padding:24px 28px}
+.exam-q-card{background:var(--bg-card);border:1px solid var(--border2);border-radius:8px;padding:20px;margin-bottom:14px;transition:all 0.2s}
+.exam-q-card.answered-ok{border-color:rgba(0,229,160,0.3)}
+.exam-q-card.answered-fail{border-color:rgba(255,68,68,0.3)}
+.eq-num{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:6px;letter-spacing:0.08em}
+.eq-topic{font-size:10px;color:var(--accent);margin-bottom:8px;font-family:'Share Tech Mono',monospace}
+.eq-text{font-size:14px;color:var(--text);margin-bottom:12px;line-height:1.6}
+
+.exam-controls{display:flex;justify-content:center;gap:12px;padding:20px 28px;border-top:1px solid var(--border2);flex-wrap:wrap}
+.submit-btn{
+  font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:0.1em;
+  padding:12px 32px;border-radius:6px;border:1px solid var(--purple);
+  background:rgba(168,85,247,0.15);color:var(--purple);cursor:pointer;transition:all 0.2s
+}
+.submit-btn:hover{background:rgba(168,85,247,0.25)}
+.submit-btn:disabled{opacity:0.3;cursor:default}
+
+/* RESULTS */
+.results-screen{display:none;padding:32px 28px;text-align:center}
+.results-screen.show{display:block}
+.cert-box{
+  max-width:600px;margin:0 auto;
+  background:var(--bg-card);border-radius:12px;overflow:hidden;
+  border:1px solid rgba(168,85,247,0.4)
+}
+.cert-header{
+  background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(0,212,255,0.15));
+  border-bottom:1px solid rgba(168,85,247,0.3);padding:24px
+}
+.cert-logo{font-family:'Orbitron',monospace;font-size:11px;color:var(--accent);letter-spacing:0.12em;margin-bottom:16px}
+.cert-title{font-family:'Orbitron',monospace;font-size:28px;font-weight:900;color:var(--text);margin-bottom:4px}
+.cert-sub{font-size:12px;color:var(--text3);letter-spacing:0.08em;font-family:'Share Tech Mono',monospace}
+.cert-body{padding:28px}
+.cert-score-ring{
+  width:120px;height:120px;border-radius:50%;margin:0 auto 20px;
+  border:3px solid var(--accent3);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;position:relative
+}
+.cert-score-num{font-family:'Orbitron',monospace;font-size:32px;font-weight:900;color:var(--accent)}
+.cert-score-label{font-size:10px;color:var(--text3);font-family:'Share Tech Mono',monospace}
+.cert-name{font-family:'Orbitron',monospace;font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px}
+.cert-course{font-size:13px;color:var(--text2);margin-bottom:20px}
+.cert-instructor{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  border-top:1px solid var(--border2);padding-top:16px;margin-top:8px
+}
+.ci-avatar{width:36px;height:36px;border-radius:50%;border:1px solid var(--accent3);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--bg-element)}
+.ci-info{text-align:left}
+.ci-name{font-size:12px;font-weight:500;color:var(--text)}
+.ci-role{font-size:10px;color:var(--text3);font-family:'Share Tech Mono',monospace}
+.cert-date{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);margin-top:16px}
+.cert-pass{color:var(--green);font-family:'Orbitron',monospace;font-size:13px;letter-spacing:0.1em}
+.cert-fail{color:var(--red);font-family:'Orbitron',monospace;font-size:13px;letter-spacing:0.1em}
+.print-btn{
+  font-family:'Orbitron',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;
+  padding:10px 24px;border-radius:6px;border:1px solid var(--green2);
+  background:rgba(0,229,160,0.1);color:var(--green);cursor:pointer;margin-top:16px;transition:all 0.2s
+}
+.print-btn:hover{background:rgba(0,229,160,0.2)}
+.retry-btn{
+  font-family:'Orbitron',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;
+  padding:10px 24px;border-radius:6px;border:1px solid var(--accent3);
+  background:rgba(0,212,255,0.08);color:var(--accent);cursor:pointer;margin-top:16px;margin-left:10px;transition:all 0.2s
+}
+@media print{.topbar,.sidebar,.nav-row,.exam-controls,.print-btn,.retry-btn{display:none!important}.cert-box{border:2px solid #888}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">FIBRA<span>OPTICA</span>·PRO</div>
+  <div class="topbar-center" id="tab-bar">
+    <button class="tab-btn active" onclick="goMod(0)">M1·Fundamentos</button>
+    <button class="tab-btn" onclick="goMod(1)">M2·Componentes</button>
+    <button class="tab-btn" onclick="goMod(2)">M3·Instalación</button>
+    <button class="tab-btn" onclick="goMod(3)">M4·Futuro</button>
+    <button class="tab-btn" onclick="goMod(4)">Examen Final</button>
+  </div>
+  <div class="prog-wrap">
+    <span class="prog-text" id="prog-text">0%</span>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+  </div>
+</div>
+
+<div class="app-wrap">
+<div class="sidebar">
+  <div class="sidebar-section">Módulos del curso</div>
+  <div class="nav-item active" id="snav0" onclick="goMod(0)">
+    <div class="nav-num" id="snum0">01</div>
+    <div class="nav-label">Introducción a la fibra óptica</div>
+  </div>
+  <div class="nav-item" id="snav1" onclick="goMod(1)">
+    <div class="nav-num" id="snum1">02</div>
+    <div class="nav-label">Componentes de la red</div>
+  </div>
+  <div class="nav-item" id="snav2" onclick="goMod(2)">
+    <div class="nav-num" id="snum2">03</div>
+    <div class="nav-label">Instalación y mantenimiento</div>
+  </div>
+  <div class="nav-item" id="snav3" onclick="goMod(3)">
+    <div class="nav-num" id="snum3">04</div>
+    <div class="nav-label">Tendencias futuras</div>
+  </div>
+  <div class="sidebar-divider"></div>
+  <div class="final-nav" id="snav4" onclick="goMod(4)">
+    <div class="final-icon">
+      <svg width="18" height="18" viewBox="0 0 18 18"><rect x="2" y="2" width="14" height="14" rx="3" fill="none" stroke="#a855f7" stroke-width="1.5"/><path d="M5 9 L7.5 11.5 L13 6" stroke="#a855f7" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+    </div>
+    <div class="final-label">Examen Final + Certificado</div>
+  </div>
+</div>
+
+<div class="screen-wrap">
+
+<!-- ===================== MÓDULO 1 ===================== -->
+<div class="screen visible" id="mod0">
+<div class="instructor-section">
+  <div class="avatar-container">
+    <div class="avatar-glow"></div>
+    <svg class="avatar-svg" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+      <!-- Body suit -->
+      <rect x="20" y="65" width="60" height="55" rx="8" fill="#0a1929"/>
+      <rect x="20" y="65" width="60" height="55" rx="8" fill="none" stroke="#00d4ff" stroke-width="1" opacity="0.6"/>
+      <!-- Chest panel -->
+      <rect x="30" y="72" width="40" height="8" rx="3" fill="#0f2337"/>
+      <rect x="33" y="74" width="10" height="4" rx="2" fill="#00d4ff" opacity="0.7"/>
+      <rect x="46" y="74" width="6" height="4" rx="2" fill="#00e5a0" opacity="0.6"/>
+      <rect x="55" y="74" width="6" height="4" rx="2" fill="#00d4ff" opacity="0.4"/>
+      <!-- Badge -->
+      <rect x="30" y="84" width="18" height="22" rx="3" fill="#0f2337"/>
+      <rect x="31" y="85" width="16" height="20" rx="2" fill="none" stroke="#00d4ff" stroke-width="0.5" opacity="0.5"/>
+      <text x="39" y="97" text-anchor="middle" font-family="monospace" font-size="5" fill="#00d4ff">V·S·C</text>
+      <!-- Arms -->
+      <rect x="2" y="68" width="14" height="30" rx="7" fill="#0a1929"/>
+      <rect x="2" y="68" width="14" height="30" rx="7" fill="none" stroke="#00d4ff" stroke-width="0.5" opacity="0.4"/>
+      <rect x="84" y="68" width="14" height="30" rx="7" fill="#0a1929"/>
+      <rect x="84" y="68" width="14" height="30" rx="7" fill="none" stroke="#00d4ff" stroke-width="0.5" opacity="0.4"/>
+      <!-- Neck -->
+      <rect x="40" y="56" width="20" height="12" rx="4" fill="#1a3040"/>
+      <!-- Head -->
+      <ellipse cx="50" cy="40" rx="26" ry="28" fill="#1a3040"/>
+      <ellipse cx="50" cy="40" rx="26" ry="28" fill="none" stroke="#00d4ff" stroke-width="0.8" opacity="0.3"/>
+      <!-- Face skin -->
+      <ellipse cx="50" cy="42" rx="18" ry="20" fill="#c8956c"/>
+      <!-- Hair -->
+      <ellipse cx="50" cy="24" rx="19" ry="10" fill="#2a1a08"/>
+      <rect x="32" y="22" width="36" height="10" rx="3" fill="#2a1a08"/>
+      <!-- Eyes -->
+      <ellipse cx="43" cy="38" rx="3.5" ry="4" fill="#1a1a1a"/>
+      <ellipse cx="57" cy="38" rx="3.5" ry="4" fill="#1a1a1a"/>
+      <circle cx="44" cy="37" r="1.2" fill="#fff" opacity="0.8"/>
+      <circle cx="58" cy="37" r="1.2" fill="#fff" opacity="0.8"/>
+      <!-- Eyebrows -->
+      <path d="M39 33 Q43 31 47 33" stroke="#2a1a08" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M53 33 Q57 31 61 33" stroke="#2a1a08" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- Nose -->
+      <path d="M48 42 Q50 46 52 42" stroke="#b0785a" stroke-width="1" fill="none"/>
+      <!-- Smile -->
+      <path d="M44 51 Q50 56 56 51" stroke="#8a4a2a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- Headset -->
+      <path d="M26 38 Q26 18 50 18 Q74 18 74 38" stroke="#00d4ff" stroke-width="2" fill="none"/>
+      <rect x="22" y="36" width="8" height="12" rx="4" fill="#0a1929"/>
+      <rect x="22" y="36" width="8" height="12" rx="4" fill="none" stroke="#00d4ff" stroke-width="1"/>
+      <rect x="70" y="36" width="8" height="12" rx="4" fill="#0a1929"/>
+      <rect x="70" y="36" width="8" height="12" rx="4" fill="none" stroke="#00d4ff" stroke-width="1"/>
+      <!-- Mic boom -->
+      <path d="M22 48 L14 56" stroke="#00d4ff" stroke-width="1" opacity="0.7"/>
+      <circle cx="13" cy="57" r="3" fill="#0a1929" stroke="#00d4ff" stroke-width="1"/>
+      <!-- Scan line effect on face -->
+      <rect x="32" y="38" width="36" height="1" fill="#00d4ff" opacity="0.08"/>
+      <rect x="32" y="44" width="36" height="1" fill="#00d4ff" opacity="0.06"/>
+    </svg>
+  </div>
+  <div class="bubble-wrap">
+    <div class="instructor-name">VLADIMIR SEVILLANO CRUZ</div>
+    <div class="instructor-title">Instructor Especialista en Redes de Fibra Óptica</div>
+    <div class="speech-bubble">
+      <div class="bubble-text">¡Bienvenidos al curso de Redes de Fibra Óptica! En este primer módulo descubriremos qué es la fibra óptica, por qué supera ampliamente al cobre y cómo está presente en casi todos los aspectos de nuestra vida digital. ¡Prepárense para una experiencia de aprendizaje inmersiva!<span class="typing"><span class="td"></span><span class="td"></span><span class="td"></span></span></div>
+    </div>
+  </div>
+</div>
+<div class="content-area">
+  <div class="mod-tag">// MÓDULO 01 · FUNDAMENTOS</div>
+  <div class="mod-title">Introducción a la Fibra Óptica</div>
+  <div class="mod-sub">¿Qué es · Ventajas · Aplicaciones · Principios físicos</div>
+  <div class="content-text">La fibra óptica es un medio de transmisión que utiliza hilos de vidrio o plástico ultrapuros para transportar información codificada en pulsos de luz. A diferencia de los cables de cobre — que usan electrones — la fibra usa fotones, lo que la hace inmune a interferencias electromagnéticas y permite velocidades de transmisión extraordinarias.</div>
+
+  <div class="vis-box">
+    <div class="vis-label">// Comparación de transmisión en tiempo real</div>
+    <div class="fiber-row">
+      <div class="fiber-name">Cobre</div>
+      <div class="fiber-track">
+        <div class="fp" style="width:18px;height:10px;background:#EF9F27;animation-duration:2.8s"></div>
+        <div class="fp" style="width:12px;height:6px;background:#BA7517;animation-duration:2.8s;animation-delay:1.2s;top:40%"></div>
+      </div>
+      <div class="fiber-info" style="color:#BA7517;font-size:10px;font-family:'Share Tech Mono',monospace">~1 Gbps · pérdida alta</div>
+    </div>
+    <div class="fiber-row">
+      <div class="fiber-name">Fibra</div>
+      <div class="fiber-track">
+        <div class="fp" style="width:12px;height:6px;background:#00d4ff;animation-duration:1.2s"></div>
+        <div class="fp" style="width:10px;height:5px;background:#00e5a0;animation-duration:1.2s;animation-delay:0.4s;top:60%"></div>
+        <div class="fp" style="width:8px;height:4px;background:#00d4ff;animation-duration:1.2s;animation-delay:0.8s;top:35%"></div>
+      </div>
+      <div class="fiber-info" style="color:#00e5a0;font-size:10px;font-family:'Share Tech Mono',monospace">100+ Tbps · baja pérdida</div>
+    </div>
+  </div>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#0f2337"/><circle cx="16" cy="16" r="7" fill="#185FA5"/><circle cx="16" cy="16" r="3" fill="#85B7EB"/><circle cx="18" cy="14" r="1" fill="#fff" opacity="0.7"/></svg></div>
+      <div class="cc-name">Núcleo</div>
+      <div class="cc-desc">Camino central donde viaja la luz. Vidrio ultratenso de alta pureza.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#0f2337"/><circle cx="16" cy="16" r="10" fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0.5"/><circle cx="16" cy="16" r="6" fill="#185FA5"/><path d="M6 16 Q16 8 26 16 Q16 24 6 16" fill="#00d4ff" opacity="0.15"/></svg></div>
+      <div class="cc-name">Revestimiento</div>
+      <div class="cc-desc">Capa que refleja la luz al interior. Índice de refracción menor al núcleo.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="4" y="13" width="24" height="6" rx="3" fill="#0f2337"/><circle cx="10" cy="16" r="3" fill="#00e5a0" opacity="0.8"/><circle cx="22" cy="16" r="3" fill="#00e5a0" opacity="0.8"/><path d="M13 16 L19 16" stroke="#00e5a0" stroke-width="1.5" stroke-dasharray="2 2"/></svg></div>
+      <div class="cc-name">Sin interferencia</div>
+      <div class="cc-desc">Inmune a campos electromagnéticos. Señal limpia y estable.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><path d="M6 16 L26 16" stroke="#00d4ff" stroke-width="2"/><path d="M20 10 L26 16 L20 22" stroke="#00d4ff" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="10" cy="16" r="2" fill="#00d4ff" opacity="0.5"/></svg></div>
+      <div class="cc-name">Alta velocidad</div>
+      <div class="cc-desc">Velocidad de la luz ≈ 200.000 km/s en la fibra. Hasta cientos de Tbps.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="6" y="10" width="8" height="12" rx="2" fill="#534AB7"/><rect x="18" y="10" width="8" height="12" rx="2" fill="#534AB7"/><path d="M14 16 L18 16" stroke="#a855f7" stroke-width="1.5"/><rect x="9" y="13" width="2" height="6" rx="1" fill="#AFA9EC"/></svg></div>
+      <div class="cc-name">Más segura</div>
+      <div class="cc-desc">Difícil interceptar sin interrumpir la señal. Ideal para datos sensibles.</div>
+    </div>
+    <div class="concept-card">
+      <div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="8" y="6" width="4" height="20" rx="2" fill="#1D9E75"/><rect x="14" y="10" width="4" height="16" rx="2" fill="#1D9E75" opacity="0.7"/><rect x="20" y="14" width="4" height="12" rx="2" fill="#1D9E75" opacity="0.5"/></svg></div>
+      <div class="cc-name">Ligereza</div>
+      <div class="cc-desc">Cables más delgados y ligeros. Fácil instalación en espacios reducidos.</div>
+    </div>
+  </div>
+
+  <div id="sc-m0" class="score-card"></div>
+  <div class="quiz-section" id="quiz-section-0"></div>
+</div>
+<div class="nav-row">
+  <button class="navbtn" onclick="prevMod()" id="btn-prev-0" disabled>← Anterior</button>
+  <div class="dots" id="dots-0"></div>
+  <button class="navbtn primary" onclick="nextMod()">Siguiente →</button>
+</div>
+</div>
+
+<!-- ===================== MÓDULO 2 ===================== -->
+<div class="screen" id="mod1">
+<div class="instructor-section">
+  <div class="avatar-container">
+    <div class="avatar-glow"></div>
+    <svg class="avatar-svg" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="65" width="60" height="55" rx="8" fill="#0a1929"/><rect x="20" y="65" width="60" height="55" rx="8" fill="none" stroke="#00d4ff" stroke-width="1" opacity="0.6"/><rect x="30" y="72" width="40" height="8" rx="3" fill="#0f2337"/><rect x="33" y="74" width="10" height="4" rx="2" fill="#00e5a0" opacity="0.7"/><rect x="46" y="74" width="6" height="4" rx="2" fill="#00d4ff" opacity="0.6"/><rect x="55" y="74" width="6" height="4" rx="2" fill="#00e5a0" opacity="0.4"/><rect x="30" y="84" width="18" height="22" rx="3" fill="#0f2337"/><rect x="31" y="85" width="16" height="20" rx="2" fill="none" stroke="#00d4ff" stroke-width="0.5" opacity="0.5"/><text x="39" y="97" text-anchor="middle" font-family="monospace" font-size="5" fill="#00d4ff">V·S·C</text><rect x="2" y="68" width="14" height="30" rx="7" fill="#0a1929"/><rect x="2" y="68" width="14" height="30" rx="7" fill="none" stroke="#00d4ff" stroke-width="0.5" opacity="0.4"/><rect x="84" y="68" width="14" height="30" rx="7" fill="#0a1929"/><rect x="84" y="68" width="14" height="30" rx="7" fill="none" stroke="#00d4ff" stroke-width="0.5" opacity="0.4"/><rect x="40" y="56" width="20" height="12" rx="4" fill="#1a3040"/><ellipse cx="50" cy="40" rx="26" ry="28" fill="#1a3040"/><ellipse cx="50" cy="42" rx="18" ry="20" fill="#c8956c"/><ellipse cx="50" cy="24" rx="19" ry="10" fill="#2a1a08"/><rect x="32" y="22" width="36" height="10" rx="3" fill="#2a1a08"/><ellipse cx="43" cy="38" rx="3.5" ry="4" fill="#1a1a1a"/><ellipse cx="57" cy="38" rx="3.5" ry="4" fill="#1a1a1a"/><circle cx="44" cy="37" r="1.2" fill="#fff" opacity="0.8"/><circle cx="58" cy="37" r="1.2" fill="#fff" opacity="0.8"/><path d="M39 33 Q43 31 47 33" stroke="#2a1a08" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M53 33 Q57 31 61 33" stroke="#2a1a08" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M48 42 Q50 46 52 42" stroke="#b0785a" stroke-width="1" fill="none"/><path d="M44 51 Q50 56 56 51" stroke="#8a4a2a" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M26 38 Q26 18 50 18 Q74 18 74 38" stroke="#00d4ff" stroke-width="2" fill="none"/><rect x="22" y="36" width="8" height="12" rx="4" fill="#0a1929"/><rect x="22" y="36" width="8" height="12" rx="4" fill="none" stroke="#00d4ff" stroke-width="1"/><rect x="70" y="36" width="8" height="12" rx="4" fill="#0a1929"/><rect x="70" y="36" width="8" height="12" rx="4" fill="none" stroke="#00d4ff" stroke-width="1"/><path d="M22 48 L14 56" stroke="#00d4ff" stroke-width="1" opacity="0.7"/><circle cx="13" cy="57" r="3" fill="#0a1929" stroke="#00d4ff" stroke-width="1"/>
+    </svg>
+  </div>
+  <div class="bubble-wrap">
+    <div class="instructor-name">VLADIMIR SEVILLANO CRUZ</div>
+    <div class="instructor-title">Instructor Especialista en Redes de Fibra Óptica</div>
+    <div class="speech-bubble">
+      <div class="bubble-text">En este módulo nos sumergimos en los componentes que hacen posible una red de fibra óptica. Desde los cables monomodo y multimodo, hasta los transceptores SFP+ y los distintos tipos de conectores. ¡Cada pieza tiene un rol crítico en el rendimiento de la red!</div>
+    </div>
+  </div>
+</div>
+<div class="content-area">
+  <div class="mod-tag">// MÓDULO 02 · COMPONENTES</div>
+  <div class="mod-title">Componentes de la Red</div>
+  <div class="mod-sub">Cables · Conectores · Empalmes · Transceptores ópticos</div>
+  <div class="content-text">Una red de fibra óptica se compone de múltiples elementos que trabajan en conjunto. Los cables protegen y guían las fibras, los conectores permiten la interconexión entre segmentos, los empalmes crean uniones permanentes y los transceptores convierten señales eléctricas a ópticas y viceversa.</div>
+
+  <div class="vis-box">
+    <div class="vis-label">// Monomodo vs Multimodo — Propagación de la luz</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:#02050f;border:1px solid #185FA5;border-radius:6px;padding:12px">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#85B7EB;margin-bottom:8px">MONOMODO · 9µm</div>
+        <div style="height:20px;background:#060d18;border-radius:10px;overflow:hidden;border:1px solid #0f2337;position:relative;margin-bottom:8px">
+          <div style="position:absolute;top:50%;transform:translateY(-50%);width:100%;height:3px;background:#00d4ff;opacity:0.9"></div>
+          <div class="fp" style="width:14px;height:8px;background:#00d4ff;border-radius:4px;animation-duration:1s;box-shadow:0 0 6px #00d4ff"></div>
+        </div>
+        <div style="font-size:10px;color:#4a6080">Un solo modo de luz · larga distancia · ancho de banda extremo</div>
+      </div>
+      <div style="background:#02050f;border:1px solid #0F6E56;border-radius:6px;padding:12px">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#5DCAA5;margin-bottom:8px">MULTIMODO · 50/62.5µm</div>
+        <div style="height:20px;background:#060d18;border-radius:10px;overflow:hidden;border:1px solid #0f2337;position:relative;margin-bottom:8px">
+          <div class="fp" style="width:10px;height:4px;background:#00e5a0;animation-duration:1.3s;top:25%"></div>
+          <div class="fp" style="width:8px;height:4px;background:#5DCAA5;animation-duration:1.3s;animation-delay:0.4s;top:55%"></div>
+          <div class="fp" style="width:6px;height:3px;background:#00e5a0;animation-duration:1.3s;animation-delay:0.8s;top:40%"></div>
+        </div>
+        <div style="font-size:10px;color:#4a6080">Múltiples modos · corta distancia · mayor dispersión modal</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="concept-grid">
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="4" y="12" width="24" height="8" rx="4" fill="#185FA5"/><circle cx="8" cy="16" r="3" fill="#85B7EB"/><circle cx="24" cy="16" r="3" fill="#85B7EB"/><rect x="11" y="15" width="10" height="2" rx="1" fill="#00d4ff" opacity="0.5"/></svg></div><div class="cc-name">Conector LC</div><div class="cc-desc">Pequeño, alta densidad. Estándar en equipos modernos.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="6" y="10" width="20" height="12" rx="3" fill="#185FA5"/><rect x="10" y="13" width="12" height="6" rx="2" fill="#0f2337"/><circle cx="16" cy="16" r="2" fill="#00d4ff"/></svg></div><div class="cc-name">Conector SC</div><div class="cc-desc">Push-pull estándar. Muy usado en redes LAN y CATV.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="8" fill="#185FA5"/><circle cx="16" cy="16" r="4" fill="#0f2337"/><circle cx="16" cy="16" r="1.5" fill="#00d4ff"/><path d="M16 8 L16 6 M16 26 L16 24 M8 16 L6 16 M26 16 L24 16" stroke="#85B7EB" stroke-width="1.5"/></svg></div><div class="cc-name">Conector ST</div><div class="cc-desc">Bayoneta giratoria. Redes antiguas y militares.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><path d="M8 16 Q16 6 24 16" stroke="#534AB7" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M8 16 Q16 26 24 16" stroke="#534AB7" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="16" cy="16" r="3" fill="#a855f7"/></svg></div><div class="cc-name">Empalme fusión</div><div class="cc-desc">Calor funde fibras. Pérdida ≤ 0.02 dB. Permanente.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="4" y="13" width="10" height="6" rx="3" fill="#534AB7"/><rect x="18" y="13" width="10" height="6" rx="3" fill="#534AB7"/><circle cx="16" cy="16" r="4" fill="#7F77DD"/><circle cx="16" cy="16" r="1.5" fill="#EEEDFE"/></svg></div><div class="cc-name">Empalme mecánico</div><div class="cc-desc">Conector alinea fibras. Rápido para reparaciones.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="5" y="10" width="22" height="12" rx="3" fill="#0F6E56"/><rect x="8" y="13" width="5" height="6" rx="1" fill="#00e5a0" opacity="0.7"/><rect x="15" y="13" width="5" height="6" rx="1" fill="#00e5a0" opacity="0.5"/><rect x="22" y="12" width="4" height="8" rx="1" fill="#5DCAA5" opacity="0.6"/></svg></div><div class="cc-name">Transceptor SFP+</div><div class="cc-desc">10 Gbps. Estándar en switches empresariales.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="4" y="9" width="24" height="14" rx="3" fill="#0F6E56"/><rect x="7" y="12" width="4" height="8" rx="1" fill="#00e5a0" opacity="0.8"/><rect x="13" y="12" width="4" height="8" rx="1" fill="#5DCAA5" opacity="0.7"/><rect x="19" y="12" width="4" height="8" rx="1" fill="#00e5a0" opacity="0.6"/></svg></div><div class="cc-name">Transceptor QSFP</div><div class="cc-desc">40/100 Gbps. Alta densidad en data centers.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><path d="M4 16 Q8 10 12 16 Q16 22 20 16 Q24 10 28 16" stroke="#EF9F27" stroke-width="2" fill="none"/><rect x="8" y="6" width="2" height="4" rx="1" fill="#BA7517"/><rect x="22" y="6" width="2" height="4" rx="1" fill="#BA7517"/></svg></div><div class="cc-name">DWDM</div><div class="cc-desc">Múltiples longitudes de onda. 80+ canales por fibra.</div></div>
+  </div>
+
+  <div id="sc-m1" class="score-card"></div>
+  <div class="quiz-section" id="quiz-section-1"></div>
+</div>
+<div class="nav-row">
+  <button class="navbtn" onclick="prevMod()">← Anterior</button>
+  <div class="dots" id="dots-1"></div>
+  <button class="navbtn primary" onclick="nextMod()">Siguiente →</button>
+</div>
+</div>
+
+<!-- ===================== MÓDULO 3 ===================== -->
+<div class="screen" id="mod2">
+<div class="instructor-section">
+  <div class="avatar-container">
+    <div class="avatar-glow"></div>
+    <svg class="avatar-svg" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="65" width="60" height="55" rx="8" fill="#0a1929"/><rect x="20" y="65" width="60" height="55" rx="8" fill="none" stroke="#00e5a0" stroke-width="1" opacity="0.6"/><rect x="30" y="72" width="40" height="8" rx="3" fill="#0f2337"/><rect x="33" y="74" width="10" height="4" rx="2" fill="#00e5a0" opacity="0.9"/><rect x="46" y="74" width="6" height="4" rx="2" fill="#00d4ff" opacity="0.6"/><rect x="55" y="74" width="6" height="4" rx="2" fill="#00e5a0" opacity="0.5"/><rect x="30" y="84" width="18" height="22" rx="3" fill="#0f2337"/><text x="39" y="97" text-anchor="middle" font-family="monospace" font-size="5" fill="#00d4ff">V·S·C</text><rect x="2" y="68" width="14" height="30" rx="7" fill="#0a1929"/><rect x="2" y="68" width="14" height="30" rx="7" fill="none" stroke="#00e5a0" stroke-width="0.5" opacity="0.4"/><rect x="84" y="68" width="14" height="30" rx="7" fill="#0a1929"/><rect x="84" y="68" width="14" height="30" rx="7" fill="none" stroke="#00e5a0" stroke-width="0.5" opacity="0.4"/><rect x="40" y="56" width="20" height="12" rx="4" fill="#1a3040"/><ellipse cx="50" cy="40" rx="26" ry="28" fill="#1a3040"/><ellipse cx="50" cy="42" rx="18" ry="20" fill="#c8956c"/><ellipse cx="50" cy="24" rx="19" ry="10" fill="#2a1a08"/><rect x="32" y="22" width="36" height="10" rx="3" fill="#2a1a08"/><ellipse cx="43" cy="38" rx="3.5" ry="4" fill="#1a1a1a"/><ellipse cx="57" cy="38" rx="3.5" ry="4" fill="#1a1a1a"/><circle cx="44" cy="37" r="1.2" fill="#fff" opacity="0.8"/><circle cx="58" cy="37" r="1.2" fill="#fff" opacity="0.8"/><path d="M39 33 Q43 31 47 33" stroke="#2a1a08" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M53 33 Q57 31 61 33" stroke="#2a1a08" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M44 51 Q50 56 56 51" stroke="#8a4a2a" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M26 38 Q26 18 50 18 Q74 18 74 38" stroke="#00e5a0" stroke-width="2" fill="none"/><rect x="22" y="36" width="8" height="12" rx="4" fill="#0a1929"/><rect x="22" y="36" width="8" height="12" rx="4" fill="none" stroke="#00e5a0" stroke-width="1"/><rect x="70" y="36" width="8" height="12" rx="4" fill="#0a1929"/><rect x="70" y="36" width="8" height="12" rx="4" fill="none" stroke="#00e5a0" stroke-width="1"/><path d="M22 48 L14 56" stroke="#00e5a0" stroke-width="1" opacity="0.7"/><circle cx="13" cy="57" r="3" fill="#0a1929" stroke="#00e5a0" stroke-width="1"/>
+    </svg>
+  </div>
+  <div class="bubble-wrap">
+    <div class="instructor-name">VLADIMIR SEVILLANO CRUZ</div>
+    <div class="instructor-title">Instructor Especialista en Redes de Fibra Óptica</div>
+    <div class="speech-bubble">
+      <div class="bubble-text">¡Llegamos al módulo más práctico! La instalación profesional de fibra óptica requiere precisión milimétrica. Veremos desde cómo preparar correctamente un cable, técnicas de empalme por fusión, hasta el uso del OTDR para diagnosticar fallas como un verdadero experto en campo.</div>
+    </div>
+  </div>
+</div>
+<div class="content-area">
+  <div class="mod-tag">// MÓDULO 03 · TÉCNICO</div>
+  <div class="mod-title">Instalación y Mantenimiento</div>
+  <div class="mod-sub">Preparación · Empalme · OTDR · Resolución de fallas</div>
+  <div class="content-text">La instalación de fibra óptica es un proceso que exige herramientas especializadas y procedimientos rigurosos. Un error en la preparación del cable o en el empalme puede resultar en pérdidas de señal que degradan toda la red. El dominio de estas técnicas es lo que distingue a un técnico certificado.</div>
+
+  <div class="vis-box">
+    <div class="vis-label">// Flujo de instalación profesional</div>
+    <div style="display:flex;align-items:stretch;gap:0;flex-wrap:wrap;gap:6px">
+      <div style="flex:1;min-width:90px;background:#02050f;border:1px solid #185FA5;border-radius:6px;padding:10px;text-align:center">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#378ADD;margin-bottom:4px">PASO 01</div>
+        <div style="font-size:11px;color:#85B7EB;font-weight:500;margin-bottom:3px">Pelar</div>
+        <div style="font-size:10px;color:#3a5f78">Retirar capas de protección</div>
+      </div>
+      <div style="display:flex;align-items:center;color:#00d4ff;font-size:14px">›</div>
+      <div style="flex:1;min-width:90px;background:#02050f;border:1px solid #185FA5;border-radius:6px;padding:10px;text-align:center">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#378ADD;margin-bottom:4px">PASO 02</div>
+        <div style="font-size:11px;color:#85B7EB;font-weight:500;margin-bottom:3px">Limpiar</div>
+        <div style="font-size:10px;color:#3a5f78">IPA 99% + hilo limpiador</div>
+      </div>
+      <div style="display:flex;align-items:center;color:#00d4ff;font-size:14px">›</div>
+      <div style="flex:1;min-width:90px;background:#02050f;border:1px solid #185FA5;border-radius:6px;padding:10px;text-align:center">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#378ADD;margin-bottom:4px">PASO 03</div>
+        <div style="font-size:11px;color:#85B7EB;font-weight:500;margin-bottom:3px">Cortar</div>
+        <div style="font-size:10px;color:#3a5f78">Cortadora de precisión 90°</div>
+      </div>
+      <div style="display:flex;align-items:center;color:#00d4ff;font-size:14px">›</div>
+      <div style="flex:1;min-width:90px;background:#02050f;border:1px solid #0F6E56;border-radius:6px;padding:10px;text-align:center">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#1D9E75;margin-bottom:4px">PASO 04</div>
+        <div style="font-size:11px;color:#5DCAA5;font-weight:500;margin-bottom:3px">Empalmar</div>
+        <div style="font-size:10px;color:#3a5f78">Fusión o mecánico</div>
+      </div>
+      <div style="display:flex;align-items:center;color:#00d4ff;font-size:14px">›</div>
+      <div style="flex:1;min-width:90px;background:#02050f;border:1px solid #534AB7;border-radius:6px;padding:10px;text-align:center">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#a855f7;margin-bottom:4px">PASO 05</div>
+        <div style="font-size:11px;color:#AFA9EC;font-weight:500;margin-bottom:3px">Verificar</div>
+        <div style="font-size:10px;color:#3a5f78">OTDR + medidor potencia</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="concept-grid">
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="10" y="4" width="12" height="24" rx="4" fill="#185FA5"/><rect x="13" y="7" width="6" height="14" rx="2" fill="#0f2337"/><rect x="6" y="12" width="4" height="3" rx="1" fill="#85B7EB"/><rect x="22" y="12" width="4" height="3" rx="1" fill="#85B7EB"/></svg></div><div class="cc-name">Pelacables FO</div><div class="cc-desc">Retira la cubierta sin dañar la fibra de vidrio.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="6" y="14" width="20" height="4" rx="2" fill="#534AB7"/><path d="M12 6 L12 14 M20 6 L20 14" stroke="#a855f7" stroke-width="1.5"/><rect x="8" y="4" width="6" height="4" rx="1" fill="#7F77DD"/><rect x="18" y="4" width="6" height="4" rx="1" fill="#7F77DD"/></svg></div><div class="cc-name">Cortadora precisión</div><div class="cc-desc">Corte perpendicular ±0.5°. Esencial para baja pérdida.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><path d="M4 26 L10 10 L16 18 L20 8 L26 14" stroke="#EF9F27" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="10" r="2.5" fill="#EF9F27"/><rect x="2" y="24" width="28" height="2" rx="1" fill="#3a5f78" opacity="0.5"/></svg></div><div class="cc-name">OTDR</div><div class="cc-desc">Localiza roturas y empalmes defectuosos a km de distancia.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="8" y="6" width="16" height="20" rx="3" fill="#0F6E56"/><rect x="11" y="9" width="10" height="7" rx="1" fill="#02050f"/><path d="M13 22 Q16 19 19 22" stroke="#00e5a0" stroke-width="1.5" fill="none"/><circle cx="16" cy="13" r="2" fill="#00e5a0" opacity="0.7"/></svg></div><div class="cc-name">Medidor de potencia</div><div class="cc-desc">Mide en dBm la señal óptica recibida en cada punto.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#0f2337"/><path d="M10 16 L14 20 L22 11" stroke="#00e5a0" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></div><div class="cc-name">Certificación FOCIS</div><div class="cc-desc">Estándar TIA-568. Validación profesional de conectores.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="4" y="10" width="24" height="12" rx="4" fill="#185FA5" opacity="0.3"/><path d="M8 16 Q16 10 24 16" stroke="#00d4ff" stroke-width="2" fill="none"/><circle cx="8" cy="16" r="2" fill="#00d4ff"/><circle cx="24" cy="16" r="2" fill="#00d4ff"/></svg></div><div class="cc-name">Fuente de luz</div><div class="cc-desc">Inyecta señal conocida para medir pérdidas en la planta.</div></div>
+  </div>
+
+  <div id="sc-m2" class="score-card"></div>
+  <div class="quiz-section" id="quiz-section-2"></div>
+</div>
+<div class="nav-row">
+  <button class="navbtn" onclick="prevMod()">← Anterior</button>
+  <div class="dots" id="dots-2"></div>
+  <button class="navbtn primary" onclick="nextMod()">Siguiente →</button>
+</div>
+</div>
+
+<!-- ===================== MÓDULO 4 ===================== -->
+<div class="screen" id="mod3">
+<div class="instructor-section">
+  <div class="avatar-container">
+    <div class="avatar-glow" style="background:radial-gradient(circle,rgba(168,85,247,0.18),transparent 70%)"></div>
+    <svg class="avatar-svg" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="65" width="60" height="55" rx="8" fill="#0a1929"/><rect x="20" y="65" width="60" height="55" rx="8" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.6"/><rect x="30" y="72" width="40" height="8" rx="3" fill="#0f2337"/><rect x="33" y="74" width="10" height="4" rx="2" fill="#a855f7" opacity="0.9"/><rect x="46" y="74" width="6" height="4" rx="2" fill="#00d4ff" opacity="0.6"/><rect x="55" y="74" width="6" height="4" rx="2" fill="#a855f7" opacity="0.5"/><rect x="30" y="84" width="18" height="22" rx="3" fill="#0f2337"/><text x="39" y="97" text-anchor="middle" font-family="monospace" font-size="5" fill="#00d4ff">V·S·C</text><rect x="2" y="68" width="14" height="30" rx="7" fill="#0a1929"/><rect x="84" y="68" width="14" height="30" rx="7" fill="#0a1929"/><rect x="40" y="56" width="20" height="12" rx="4" fill="#1a3040"/><ellipse cx="50" cy="40" rx="26" ry="28" fill="#1a3040"/><ellipse cx="50" cy="42" rx="18" ry="20" fill="#c8956c"/><ellipse cx="50" cy="24" rx="19" ry="10" fill="#2a1a08"/><rect x="32" y="22" width="36" height="10" rx="3" fill="#2a1a08"/><ellipse cx="43" cy="38" rx="3.5" ry="4" fill="#1a1a1a"/><ellipse cx="57" cy="38" rx="3.5" ry="4" fill="#1a1a1a"/><circle cx="44" cy="37" r="1.2" fill="#fff" opacity="0.8"/><circle cx="58" cy="37" r="1.2" fill="#fff" opacity="0.8"/><path d="M44 51 Q50 56 56 51" stroke="#8a4a2a" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M26 38 Q26 18 50 18 Q74 18 74 38" stroke="#a855f7" stroke-width="2" fill="none"/><rect x="22" y="36" width="8" height="12" rx="4" fill="#0a1929"/><rect x="22" y="36" width="8" height="12" rx="4" fill="none" stroke="#a855f7" stroke-width="1"/><rect x="70" y="36" width="8" height="12" rx="4" fill="#0a1929"/><rect x="70" y="36" width="8" height="12" rx="4" fill="none" stroke="#a855f7" stroke-width="1"/><path d="M22 48 L14 56" stroke="#a855f7" stroke-width="1" opacity="0.7"/><circle cx="13" cy="57" r="3" fill="#0a1929" stroke="#a855f7" stroke-width="1"/>
+    </svg>
+  </div>
+  <div class="bubble-wrap">
+    <div class="instructor-name">VLADIMIR SEVILLANO CRUZ</div>
+    <div class="instructor-title">Instructor Especialista en Redes de Fibra Óptica</div>
+    <div class="speech-bubble">
+      <div class="bubble-text">¡Bienvenidos al módulo del futuro! La fibra óptica está traspasando las fronteras tradicionales de las telecomunicaciones. Computación cuántica, inteligencia artificial distribuida, ciudades inteligentes, fibra de polímero flexible y técnicas SDM están redefiniendo lo que es posible. ¡Prepárense para el mañana!</div>
+    </div>
+  </div>
+</div>
+<div class="content-area">
+  <div class="mod-tag">// MÓDULO 04 · INNOVACIÓN</div>
+  <div class="mod-title">Tendencias Futuras</div>
+  <div class="mod-sub">Computación cuántica · IA · Nuevos materiales · SDM · Modulación coherente</div>
+  <div class="content-text">La fibra óptica del futuro no solo transmitirá datos más rápido — será el sistema nervioso de infraestructuras inteligentes. Los nuevos materiales como cristales fotónicos y fibras de polímero, junto con técnicas como SDM y la modulación coherente avanzada, multiplicarán la capacidad actual por factores de cientos.</div>
+
+  <div class="vis-box">
+    <div class="vis-label">// Técnicas de transmisión de próxima generación</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:#02050f;border:1px solid #534AB7;border-radius:6px;padding:12px">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#a855f7;margin-bottom:6px">SDM — División espacial</div>
+        <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px">
+          <div style="height:3px;border-radius:2px;background:#534AB7"></div>
+          <div style="height:3px;border-radius:2px;background:#7F77DD"></div>
+          <div style="height:3px;border-radius:2px;background:#AFA9EC"></div>
+          <div style="height:3px;border-radius:2px;background:#534AB7"></div>
+        </div>
+        <div style="font-size:10px;color:#4a6080">Múltiples núcleos en un cable · capacidad ×10</div>
+      </div>
+      <div style="background:#02050f;border:1px solid #0F6E56;border-radius:6px;padding:12px">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#00e5a0;margin-bottom:6px">Modulación coherente</div>
+        <div style="display:flex;align-items:center;gap:2px;margin-bottom:6px;overflow:hidden;height:20px">
+          <div style="flex:1;height:12px;background:repeating-linear-gradient(90deg,#1D9E75 0px,#1D9E75 3px,transparent 3px,transparent 8px);opacity:0.7;border-radius:2px"></div>
+        </div>
+        <div style="font-size:10px;color:#4a6080">512-QAM · más bits por símbolo · eficiencia espectral</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="concept-grid">
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="8" fill="#1e2d4a"/><circle cx="16" cy="16" r="4" fill="#534AB7"/><circle cx="16" cy="16" r="1.5" fill="#EEEDFE"/><path d="M16 4 L16 8 M16 24 L16 28 M4 16 L8 16 M24 16 L28 16" stroke="#7F77DD" stroke-width="1.5"/><circle cx="16" cy="4" r="1.5" fill="#a855f7"/><circle cx="16" cy="28" r="1.5" fill="#a855f7"/><circle cx="4" cy="16" r="1.5" fill="#a855f7"/><circle cx="28" cy="16" r="1.5" fill="#a855f7"/></svg></div><div class="cc-name">Computación cuántica</div><div class="cc-desc">Transmisión de qubits entrelazados. Redes cuánticas distribuidas.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="4" y="8" width="8" height="8" rx="2" fill="#185FA5"/><rect x="20" y="8" width="8" height="8" rx="2" fill="#185FA5"/><rect x="12" y="18" width="8" height="8" rx="2" fill="#378ADD"/><path d="M8 16 L16 22 M24 16 L16 22" stroke="#85B7EB" stroke-width="1.2"/></svg></div><div class="cc-name">IA distribuida</div><div class="cc-desc">Interconexión GPU y NPU. Entrenamiento de modelos a escala.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="8" r="4" fill="#00d4ff" opacity="0.8"/><circle cx="8" cy="20" r="3" fill="#00e5a0" opacity="0.7"/><circle cx="24" cy="20" r="3" fill="#00e5a0" opacity="0.7"/><circle cx="16" cy="26" r="3" fill="#00d4ff" opacity="0.6"/><path d="M16 12 L8 17 M16 12 L24 17 M8 23 L16 23 M24 23 L16 23" stroke="#00d4ff" stroke-width="1" opacity="0.5"/></svg></div><div class="cc-name">Sensores distribuidos</div><div class="cc-desc">Monitoreo sísmico, térmico y de presión en tiempo real.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><path d="M8 24 Q8 10 16 8 Q24 10 24 24" stroke="#EF9F27" stroke-width="2" fill="none"/><path d="M11 24 Q11 14 16 12 Q21 14 21 24" stroke="#EF9F27" stroke-width="1.5" fill="none" opacity="0.5"/><line x1="16" y1="8" x2="16" y2="5" stroke="#EF9F27" stroke-width="1.5"/></svg></div><div class="cc-name">Fibra de polímero</div><div class="cc-desc">Flexible y económica. Wearables y dispositivos médicos implantables.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="4" y="4" width="24" height="24" rx="4" fill="#0f2337" stroke="#1D9E75" stroke-width="1"/><rect x="8" y="8" width="6" height="6" rx="1" fill="#1D9E75" opacity="0.7"/><rect x="18" y="8" width="6" height="6" rx="1" fill="#1D9E75" opacity="0.5"/><rect x="8" y="18" width="6" height="6" rx="1" fill="#1D9E75" opacity="0.5"/><rect x="18" y="18" width="6" height="6" rx="1" fill="#00e5a0" opacity="0.7"/></svg></div><div class="cc-name">Cristales fotónicos</div><div class="cc-desc">Control preciso de la propagación de luz. Menor atenuación.</div></div>
+    <div class="concept-card"><div class="cc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="#0f2337" stroke="#00d4ff" stroke-width="1"/><path d="M10 16 Q13 12 16 16 Q19 20 22 16" stroke="#00d4ff" stroke-width="1.5" fill="none"/><circle cx="10" cy="16" r="1.5" fill="#00d4ff"/><circle cx="22" cy="16" r="1.5" fill="#00d4ff"/></svg></div><div class="cc-name">6G backhaul</div><div class="cc-desc">Columna vertebral de redes 6G. Latencia sub-microsegundo.</div></div>
+  </div>
+
+  <div id="sc-m3" class="score-card"></div>
+  <div class="quiz-section" id="quiz-section-3"></div>
+</div>
+<div class="nav-row">
+  <button class="navbtn" onclick="prevMod()">← Anterior</button>
+  <div class="dots" id="dots-3"></div>
+  <button class="navbtn primary" onclick="goMod(4)">Ir al Examen Final →</button>
+</div>
+</div>
+
+<!-- ===================== EXAMEN FINAL ===================== -->
+<div class="screen" id="mod4">
+<div class="exam-hero">
+  <div class="exam-badge-wrap"><div class="exam-badge">// EVALUACIÓN FINAL DE CERTIFICACIÓN</div></div>
+  <div class="exam-title">Examen Final</div>
+  <div class="exam-sub">Redes de Fibra Óptica — Domina la Conectividad del Futuro</div>
+  <div class="exam-stats">
+    <div class="estat"><div class="estat-val">20</div><div class="estat-label">Preguntas</div></div>
+    <div class="estat"><div class="estat-val">4</div><div class="estat-label">Módulos</div></div>
+    <div class="estat"><div class="estat-val">70%</div><div class="estat-label">Para aprobar</div></div>
+    <div class="estat"><div class="estat-val" id="exam-score-display">—</div><div class="estat-label">Tu puntaje</div></div>
+  </div>
+</div>
+
+<div class="results-screen" id="results-screen"></div>
+
+<div class="exam-area" id="exam-questions-area">
+  <div id="exam-qs"></div>
+</div>
+<div class="exam-controls" id="exam-controls">
+  <button class="submit-btn" id="submit-btn" onclick="submitExam()">ENVIAR EXAMEN Y OBTENER CERTIFICADO</button>
+</div>
+</div>
+
+</div>
+</div>
+
+<script>
+const MODULES_COUNT = 5;
+let currentMod = 0;
+let moduleScores = [null, null, null, null];
+let quizAnswers = [{}, {}, {}, {}];
+
+const quizData = [
+  // Módulo 1
+  { questions: [
+    { q: "¿Cuál es el componente central de la fibra óptica por donde viaja la luz?", opts: ["Revestimiento", "Cubierta de protección", "Núcleo", "Buffer"], correct: 2, exp: "El núcleo es el hilo de vidrio ultrapuro por donde se propagan los pulsos de luz mediante reflexión interna total." },
+    { q: "¿Qué principio físico permite que la luz se mantenga dentro de la fibra óptica?", opts: ["Refracción simple", "Reflexión interna total", "Difracción de onda", "Interferencia constructiva"], correct: 1, exp: "La reflexión interna total ocurre cuando la luz pasa de un medio más denso (núcleo) a uno menos denso (revestimiento) en un ángulo mayor al ángulo crítico." },
+    { q: "¿Por qué la fibra óptica es inmune a las interferencias electromagnéticas (EMI)?", opts: ["Porque el vidrio es muy resistente", "Porque usa señales de luz, no eléctricas", "Porque tiene cubierta metálica", "Porque trabaja en frecuencias muy altas"], correct: 1, exp: "Al transmitir fotones (luz) en lugar de electrones, la fibra no se ve afectada por campos eléctricos o magnéticos externos." },
+    { q: "¿En cuál de estos campos NO se utiliza la fibra óptica?", opts: ["Telecomunicaciones", "Medicina (endoscopía)", "Ignición de motores a gasolina", "Sistemas de defensa"], correct: 2, exp: "La fibra óptica tiene aplicaciones en telecom, medicina, industria y defensa. La ignición de motores a gasolina usa sistemas eléctricos convencionales." },
+    { q: "¿Cuánto puede tardar una señal en recorrer 1 km de fibra óptica en comparación con la velocidad de la luz en el vacío?", opts: ["Es exactamente igual", "Es un 33% más lenta", "Es 10 veces más lenta", "Es 100 veces más lenta"], correct: 1, exp: "La luz viaja en la fibra aproximadamente a 200.000 km/s, un 33% más lenta que en el vacío (300.000 km/s), debido al índice de refracción del vidrio." }
+  ]},
+  // Módulo 2
+  { questions: [
+    { q: "¿Cuál es la diferencia principal entre fibra monomodo y multimodo?", opts: ["El color del revestimiento", "El tamaño del núcleo y el número de modos de propagación", "El material del conector", "La temperatura de operación"], correct: 1, exp: "Monomodo tiene núcleo de 9 µm (un solo modo de luz, largas distancias). Multimodo tiene núcleo de 50 o 62.5 µm (múltiples modos, cortas distancias)." },
+    { q: "¿Qué tipo de empalme produce la menor pérdida de señal?", opts: ["Empalme mecánico con gel", "Conector SC pulido APC", "Empalme por fusión", "Conector ST de bayoneta"], correct: 2, exp: "El empalme por fusión funde térmicamente las fibras creando una unión continua con pérdida típica ≤ 0.02 dB, la más baja posible." },
+    { q: "¿Para qué sirve un transceptor óptico SFP+?", opts: ["Para amplificar la señal eléctrica", "Para convertir señales eléctricas a ópticas y viceversa a 10 Gbps", "Para medir la potencia de la señal", "Para empalmar fibras por fusión"], correct: 1, exp: "Los transceptores SFP+ son módulos de 10 Gbps que convierten señales eléctricas (del switch/router) a señales ópticas para la fibra." },
+    { q: "¿Qué significa la tecnología DWDM en fibra óptica?", opts: ["Distribución de Wifi en distancias máximas", "Multiplexación por división de longitud de onda densa", "Detección de daños por agua en medios", "Dispositivo de monitoreo de red"], correct: 1, exp: "DWDM (Dense Wavelength Division Multiplexing) permite transmitir simultáneamente múltiples longitudes de onda (canales) en una sola fibra, multiplicando enormemente su capacidad." },
+    { q: "¿Cuál conector de fibra óptica usa un mecanismo de giro tipo bayoneta?", opts: ["LC", "SC", "ST", "FC"], correct: 2, exp: "El conector ST (Straight Tip) usa un mecanismo bayoneta de giro para asegurar la conexión, común en instalaciones legacy y militares." }
+  ]},
+  // Módulo 3
+  { questions: [
+    { q: "¿Qué herramienta permite localizar con precisión la ubicación de una rotura en un cable de fibra óptica a kilómetros de distancia?", opts: ["Medidor de potencia óptica", "OTDR (reflectómetro óptico en dominio del tiempo)", "Multímetro digital", "Fuente de luz láser"], correct: 1, exp: "El OTDR envía pulsos de luz y analiza las reflexiones para crear un mapa de la fibra, identificando roturas, empalmes y pérdidas a lo largo del recorrido." },
+    { q: "¿Cuál es el ángulo de corte correcto para preparar una fibra antes del empalme por fusión?", opts: ["45 grados", "30 grados", "60 grados", "90 grados (perpendicular)"], correct: 3, exp: "El corte debe ser perpendicular (90°) al eje de la fibra. Una desviación mayor a ±0.5° causa reflexiones y pérdida de señal significativa." },
+    { q: "¿Con qué alcohol se limpia correctamente la fibra óptica antes del empalme?", opts: ["Alcohol isopropílico al 70%", "Alcohol etílico al 96%", "Alcohol isopropílico al 99%", "Agua destilada"], correct: 2, exp: "Se usa alcohol isopropílico al 99% (IPA 99%) para evitar residuos de agua que puedan contaminar el núcleo y causar pérdidas de señal." },
+    { q: "¿Qué estándar TIA define los procedimientos de certificación de conectores de fibra óptica?", opts: ["TIA-942", "TIA-568", "TIA-606", "TIA-485"], correct: 1, exp: "TIA-568 es el estándar que define los requisitos de cableado estructurado, incluyendo la certificación de enlaces de fibra óptica (FOCIS)." },
+    { q: "¿Qué indica una pérdida de retorno (return loss) alta en un conector de fibra óptica?", opts: ["Hay mucha señal reflejada de regreso", "El conector está limpio y bien pulido", "La fibra está rota", "El transceptor está fallando"], correct: 1, exp: "Una pérdida de retorno alta (ej. >40 dB) indica que muy poca señal se refleja de vuelta — el conector está correctamente pulido y genera mínimas reflexiones." }
+  ]},
+  // Módulo 4
+  { questions: [
+    { q: "¿Qué técnica usa múltiples núcleos o fibras paralelas dentro de un cable para multiplicar la capacidad?", opts: ["Modulación coherente 512-QAM", "SDM — Multiplexación por División Espacial", "DWDM con amplificadores EDFA", "Empalme por fusión en paralelo"], correct: 1, exp: "SDM (Space Division Multiplexing) usa múltiples núcleos en una fibra o múltiples fibras en paralelo, similar a tener varias autopistas en un mismo túnel." },
+    { q: "¿Para qué se usa la fibra óptica en computación cuántica?", opts: ["Para alimentar los procesadores cuánticos", "Para transmitir qubits entrelazados entre nodos cuánticos", "Para refrigerar los qubits superconductores", "Para programar los circuitos cuánticos"], correct: 1, exp: "La fibra óptica permite la transmisión de estados cuánticos (qubits fotónicos) entre nodos de redes cuánticas distribuidas, fundamental para la criptografía cuántica." },
+    { q: "¿Cuál es la ventaja principal de las fibras de polímero sobre las de vidrio?", opts: ["Mayor ancho de banda y menor atenuación", "Mayor rigidez y resistencia", "Mayor flexibilidad y menor costo para cortas distancias", "Mejor rendimiento a temperaturas extremas"], correct: 2, exp: "Las fibras de polímero (POF) son más flexibles, económicas y seguras de instalar. Son ideales para aplicaciones de corta distancia como hogares y wearables." },
+    { q: "¿Qué aplica la modulación coherente para aumentar la eficiencia espectral?", opts: ["Mayor potencia láser", "Técnicas de modulación avanzadas como QAM para transmitir más bits por símbolo", "Más fibras en paralelo", "Amplificadores Raman distribuidos"], correct: 1, exp: "La modulación coherente con esquemas como 64-QAM o 512-QAM codifica múltiples bits en cada símbolo transmitido, multiplicando el throughput sin aumentar el ancho de banda." },
+    { q: "¿Cuál es la velocidad aproximada máxima de transmisión demostrada experimentalmente en fibra óptica a 2024?", opts: ["10 Gbps", "100 Gbps", "1 Tbps", "Petabits por segundo (Pbps)"], correct: 3, exp: "En laboratorio se han alcanzado velocidades de varios Petabits por segundo usando SDM+DWDM+modulación coherente en una sola fibra, aunque comercialmente la escala es menor." }
+  ]}
+];
+
+const finalExamData = [
+  { mod: "Módulo 1 — Fundamentos", q: "¿Cuál de los siguientes materiales se usa principalmente para fabricar el núcleo de las fibras ópticas de alta calidad?", opts: ["Cobre ultrapuro", "Vidrio de sílice ultrapuro (SiO₂)", "Polipropileno termoestable", "Aluminio fundido"], correct: 1, exp: "El núcleo de las fibras ópticas de telecomunicaciones se fabrica de sílice (SiO₂) de pureza extrema (contaminación < 1 ppb) para minimizar la atenuación." },
+  { mod: "Módulo 1 — Fundamentos", q: "La pérdida de señal por unidad de longitud en fibra óptica se mide en:", opts: ["Vatios por metro (W/m)", "dB/km (decibeles por kilómetro)", "Hz/km (hertzios por kilómetro)", "Ohm/m (ohmios por metro)"], correct: 1, exp: "La atenuación en fibra se expresa en dB/km. Las fibras monomodo modernas tienen atenuación de ~0.2 dB/km a 1550 nm." },
+  { mod: "Módulo 1 — Fundamentos", q: "¿En qué aplicación médica es fundamental la fibra óptica?", opts: ["Resonancia magnética (MRI)", "Tomografía computarizada (CT)", "Endoscopía para visualización interna", "Electrocardiograma (ECG)"], correct: 2, exp: "Los endoscopios usan fibra óptica para transmitir luz al interior del cuerpo y capturar imágenes de alta resolución sin cirugía invasiva." },
+  { mod: "Módulo 2 — Componentes", q: "¿Cuál es el diámetro típico del núcleo de una fibra monomodo estándar?", opts: ["50 micrómetros", "62.5 micrómetros", "9 micrómetros", "125 micrómetros"], correct: 2, exp: "La fibra monomodo estándar G.652 tiene núcleo de 9 µm y revestimiento de 125 µm. El núcleo pequeño fuerza la propagación de un solo modo." },
+  { mod: "Módulo 2 — Componentes", q: "¿Qué conector de fibra óptica es el más pequeño y se usa en equipos de alta densidad como switches SAN?", opts: ["SC (Square Connector)", "ST (Straight Tip)", "LC (Lucent Connector)", "FC (Ferrule Connector)"], correct: 2, exp: "El conector LC es el más pequeño (ferrule de 1.25 mm vs 2.5 mm del SC). Se usa en SFP, SFP+ y QSFP en datacenters y equipos de alta densidad." },
+  { mod: "Módulo 2 — Componentes", q: "Un transceptor QSFP28 opera a una velocidad de:", opts: ["10 Gbps", "25 Gbps", "40 Gbps", "100 Gbps"], correct: 3, exp: "QSFP28 (Quad Small Form-factor Pluggable 28) opera a 100 Gbps usando 4 carriles de 25 Gbps cada uno. Es estándar en datacenters modernos." },
+  { mod: "Módulo 2 — Componentes", q: "¿Qué es una ODF (Optical Distribution Frame)?", opts: ["Un tipo de fibra de polímero", "Panel de distribución óptica para gestionar y organizar los cables de fibra", "Un algoritmo de corrección de errores", "Un tipo de amplificador óptico"], correct: 1, exp: "La ODF es el panel donde terminan los cables de fibra y se realizan las interconexiones. Es esencial para la organización y gestión de una planta óptica." },
+  { mod: "Módulo 3 — Instalación", q: "¿Cuál es la pérdida de inserción máxima aceptable para un conector de fibra monomodo según estándar TIA-568?", opts: ["0.75 dB", "1.5 dB", "3.0 dB", "0.3 dB"], correct: 0, exp: "TIA-568 establece 0.75 dB como la pérdida de inserción máxima por conector en fibra monomodo. Los mejores conectores llegan a ≤ 0.1 dB." },
+  { mod: "Módulo 3 — Instalación", q: "¿Qué debe hacerse ANTES de inspeccionar o limpiar un conector de fibra óptica?", opts: ["Aplicar gel óptico", "Apagar o desconectar la fuente de luz láser", "Doblar la fibra para liberar tensión", "Aumentar la potencia del transceptor"], correct: 1, exp: "El láser en fibra óptica (1310/1550 nm) es invisible y puede causar daño ocular permanente. Siempre se debe apagar la fuente antes de inspeccionar conectores." },
+  { mod: "Módulo 3 — Instalación", q: "¿Qué fenómeno ocurre cuando se dobla excesivamente un cable de fibra óptica?", opts: ["Aumenta la velocidad de transmisión", "Pérdida por curvatura (bending loss)", "Mejora la reflexión interna", "Incrementa el ancho de banda"], correct: 1, exp: "Las pérdidas por curvatura ocurren cuando el radio de curvatura es menor al mínimo especificado. La luz escapa del núcleo rompiendo la reflexión interna total." },
+  { mod: "Módulo 3 — Instalación", q: "¿Qué valor negativo en dBm indica una señal óptica más fuerte en un medidor de potencia?", opts: ["−30 dBm es más fuerte que −10 dBm", "−10 dBm es más fuerte que −30 dBm", "Ambos valores representan la misma potencia", "Los valores negativos indican falla total"], correct: 1, exp: "En la escala dBm, los valores menos negativos (más cercanos a 0 dBm) indican mayor potencia. −10 dBm = 100 µW; −30 dBm = 1 µW." },
+  { mod: "Módulo 4 — Futuro", q: "¿Qué es el entrelazamiento cuántico y para qué se usa en redes de fibra óptica?", opts: ["Un método de empalme de alta precisión", "Un fenómeno donde dos qubits están correlacionados instantáneamente, usado para criptografía cuántica", "Un protocolo de enrutamiento óptico", "Una técnica de modulación avanzada"], correct: 1, exp: "El entrelazamiento cuántico permite crear claves criptográficas absolutamente seguras (QKD — Quantum Key Distribution) transmitidas por fibra óptica." },
+  { mod: "Módulo 4 — Futuro", q: "¿Cuántos canales de longitud de onda puede manejar un sistema DWDM denso moderno en una sola fibra?", opts: ["4 canales", "16 canales", "Hasta 80 o más canales", "Exactamente 10 canales"], correct: 2, exp: "Los sistemas DWDM densos modernos pueden manejar 80+ canales en la banda C (1530-1565 nm) con separación de 50 GHz, multiplicando enormemente la capacidad." },
+  { mod: "Módulo 4 — Futuro", q: "¿Para qué aplicación futura se investiga la fibra óptica integrada en textiles?", opts: ["Para calentar la ropa en invierno", "Para wearables de monitoreo de salud, iluminación y comunicación de datos", "Para reforzar la resistencia de la tela", "Para impermeabilizar prendas"], correct: 1, exp: "Las fibras de polímero óptico (POF) integradas en textiles permitirán wearables que monitoreen constantes vitales, transmitan datos y hasta iluminen prendas." },
+  { mod: "Módulo 1 — Fundamentos", q: "¿Cuál de las siguientes es una ventaja de seguridad de la fibra óptica sobre el cobre?", opts: ["Es imposible romperla físicamente", "Es muy difícil interceptar la señal sin interrumpir la transmisión", "Funciona sin energía eléctrica", "Es completamente opaca a la radiación UV"], correct: 1, exp: "Para interceptar fibra óptica hay que doblarla o cortarla, lo que interrumpe la señal y es detectable. Esto la hace mucho más segura que el cobre (donde se puede hacer tap pasivo)." },
+  { mod: "Módulo 2 — Componentes", q: "¿Qué hace un amplificador EDFA en una red de fibra óptica?", opts: ["Convierte señales de cobre a fibra", "Amplifica directamente la señal óptica sin convertirla a eléctrica", "Mide la atenuación en la fibra", "Multiplica los canales DWDM"], correct: 1, exp: "El EDFA (Erbium-Doped Fiber Amplifier) amplifica la señal óptica directamente usando fibra dopada con erbio excitada por un láser de bombeo. Sin conversión óptico-eléctrica-óptica." },
+  { mod: "Módulo 3 — Instalación", q: "¿Cuál es la función del gel índice-matching en algunos empalmes mecánicos?", opts: ["Reforzar la unión mecánica entre fibras", "Igualar los índices de refracción para reducir reflexiones en la unión", "Lubricar el mecanismo del conector", "Proteger contra la humedad"], correct: 1, exp: "El gel índice-matching tiene el mismo índice de refracción que el núcleo de la fibra, eliminando el aire en la unión y reduciendo las reflexiones y pérdidas de inserción." },
+  { mod: "Módulo 4 — Futuro", q: "¿Qué papel juega la fibra óptica en las redes 5G y el futuro 6G?", opts: ["La fibra reemplaza completamente a las antenas inalámbricas", "La fibra es el backhaul (transporte) que conecta las antenas con el núcleo de la red", "La fibra solo se usa en las torres de antenas", "5G no usa fibra óptica"], correct: 1, exp: "La fibra óptica es el backhaul crítico de 5G/6G: conecta las small cells y macro-antenas con el núcleo de la red. Sin fibra de alta capacidad, las velocidades 5G no son posibles." },
+  { mod: "Módulo 2 — Componentes", q: "¿Qué diferencia a un conector APC (Angle Physical Contact) de un UPC (Ultra Physical Contact)?", opts: ["El APC tiene una ferrule de mayor diámetro", "El APC tiene el extremo pulido en ángulo de 8° para reducir reflexiones", "El UPC es más resistente mecánicamente", "No hay diferencia funcional entre ellos"], correct: 1, exp: "El conector APC tiene la ferrule pulida en ángulo de 8°, lo que redirige las reflexiones fuera del núcleo. Logra pérdida de retorno >60 dB vs >50 dB del UPC." },
+  { mod: "Módulo 3 — Instalación", q: "Al realizar un empalme por fusión, ¿qué proceso ejecuta automáticamente la fusionadora moderna?", opts: ["Solo alinea las fibras manualmente", "Alinea las fibras con visión por computadora, las funde con arco eléctrico y estima la pérdida del empalme", "Solo aplica calor sin verificación", "Solo mide la pérdida sin realizar la fusión"], correct: 1, exp: "Las fusionadoras modernas usan cámaras y microscopios digitales para alineación automática, luego aplican un arco eléctrico controlado y estiman la pérdida del empalme resultante." }
+];
+
+let examUserAnswers = new Array(finalExamData.length).fill(null);
+let examSubmitted = false;
+
+function buildQuiz(modIdx) {
+  const container = document.getElementById('quiz-section-' + modIdx);
+  const data = quizData[modIdx];
+  let html = '<div class="quiz-header"><div class="quiz-badge">QUIZ — MÓDULO ' + (modIdx+1) + '</div><div class="quiz-count" id="qcount-' + modIdx + '">' + data.questions.length + ' preguntas</div></div>';
+  data.questions.forEach((q, qi) => {
+    html += '<div class="exam-q-card" id="qcard-' + modIdx + '-' + qi + '">';
+    html += '<div class="eq-num">PREGUNTA ' + (qi+1) + ' DE ' + data.questions.length + '</div>';
+    html += '<div class="eq-text">' + q.q + '</div>';
+    html += '<div class="quiz-opts">';
+    q.opts.forEach((opt, oi) => {
+      html += '<button class="qopt" id="qopt-' + modIdx + '-' + qi + '-' + oi + '" onclick="quizAnswer(' + modIdx + ',' + qi + ',' + oi + ')"><span class="ql">' + String.fromCharCode(65+oi) + '.</span><span>' + opt + '</span></button>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-fb" id="qfb-' + modIdx + '-' + qi + '"></div>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function quizAnswer(modIdx, qi, oi) {
+  if (quizAnswers[modIdx][qi] !== undefined) return;
+  quizAnswers[modIdx][qi] = oi;
+  const data = quizData[modIdx].questions[qi];
+  const correct = data.correct;
+  for (let i = 0; i < data.opts.length; i++) {
+    const btn = document.getElementById('qopt-' + modIdx + '-' + qi + '-' + i);
+    btn.classList.add('disabled');
+    if (i === correct) btn.classList.add(oi === correct ? 'correct' : 'reveal');
+    else if (i === oi && oi !== correct) btn.classList.add('wrong');
+  }
+  const fb = document.getElementById('qfb-' + modIdx + '-' + qi);
+  fb.className = 'quiz-fb show ' + (oi === correct ? 'ok' : 'fail');
+  fb.innerHTML = (oi === correct ? '✓ Correcto: ' : '✗ Incorrecto. ') + data.exp;
+
+  const answered = Object.keys(quizAnswers[modIdx]).length;
+  const total = quizData[modIdx].questions.length;
+  if (answered === total) {
+    let score = 0;
+    quizData[modIdx].questions.forEach((q, i) => { if (quizAnswers[modIdx][i] === q.correct) score++; });
+    moduleScores[modIdx] = score;
+    showModuleScore(modIdx, score, total);
+    updateProgress();
+  }
+}
+
+function showModuleScore(modIdx, score, total) {
+  const sc = document.getElementById('sc-m' + modIdx);
+  const pct = Math.round(score / total * 100);
+  const pass = pct >= 60;
+  sc.className = 'score-card show';
+  sc.innerHTML = '<div class="sc-icon"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M3 9 L7 13 L15 5" stroke="' + (pass ? '#00e5a0' : '#ff4444') + '" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div><div class="sc-text">Quiz completado: <strong>' + score + '/' + total + ' correctas (' + pct + '%)</strong> — ' + (pass ? '¡Excelente dominio del módulo!' : 'Repasa el contenido antes del examen final.') + '</div>';
+  if (pass) {
+    document.getElementById('snav' + modIdx).classList.add('done');
+    document.getElementById('snum' + modIdx).textContent = '✓';
+  }
+}
+
+function buildDots(modIdx) {
+  const container = document.getElementById('dots-' + modIdx);
+  if (!container) return;
+  let html = '';
+  for (let i = 0; i < 4; i++) {
+    const cls = i === modIdx ? 'dot active' : (moduleScores[i] !== null ? 'dot done' : 'dot');
+    html += '<div class="' + cls + '"></div>';
+  }
+  container.innerHTML = html;
+}
+
+function updateProgress() {
+  const done = moduleScores.filter(s => s !== null).length;
+  const pct = Math.round(done / 4 * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = pct + '%';
+}
+
+function goMod(idx) {
+  document.getElementById('mod' + currentMod).classList.remove('visible');
+  document.getElementById('snav' + currentMod).classList.remove('active');
+  document.querySelectorAll('.tab-btn')[currentMod].classList.remove('active');
+  currentMod = idx;
+  document.getElementById('mod' + currentMod).classList.add('visible');
+  document.getElementById('snav' + currentMod).classList.add('active');
+  document.querySelectorAll('.tab-btn')[currentMod].classList.add('active');
+  for (let i = 0; i < 4; i++) buildDots(i);
+  if (idx === 4 && !examSubmitted) buildExam();
+  window.scrollTo(0, 0);
+}
+
+function nextMod() { if (currentMod < 4) goMod(currentMod + 1); }
+function prevMod() { if (currentMod > 0) goMod(currentMod - 1); }
+
+function buildExam() {
+  const container = document.getElementById('exam-qs');
+  let html = '';
+  finalExamData.forEach((q, i) => {
+    html += '<div class="exam-q-card" id="eq-' + i + '">';
+    html += '<div class="eq-num">PREGUNTA ' + (i+1) + ' DE ' + finalExamData.length + '</div>';
+    html += '<div class="eq-topic">' + q.mod + '</div>';
+    html += '<div class="eq-text">' + q.q + '</div>';
+    html += '<div class="quiz-opts">';
+    q.opts.forEach((opt, oi) => {
+      html += '<button class="qopt" id="eq-opt-' + i + '-' + oi + '" onclick="examAnswer(' + i + ',' + oi + ')"><span class="ql">' + String.fromCharCode(65+oi) + '.</span><span>' + opt + '</span></button>';
+    });
+    html += '</div></div>';
+  });
+  container.innerHTML = html;
+}
+
+function examAnswer(qi, oi) {
+  if (examSubmitted) return;
+  // Deselect previous
+  if (examUserAnswers[qi] !== null) {
+    for (let i = 0; i < finalExamData[qi].opts.length; i++) {
+      const btn = document.getElementById('eq-opt-' + qi + '-' + i);
+      btn.classList.remove('correct');
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    }
+  }
+  examUserAnswers[qi] = oi;
+  const btn = document.getElementById('eq-opt-' + qi + '-' + oi);
+  btn.style.background = 'rgba(0,212,255,0.12)';
+  btn.style.borderColor = '#00d4ff';
+  btn.style.color = '#00d4ff';
+}
+
+function submitExam() {
+  const answered = examUserAnswers.filter(a => a !== null).length;
+  if (answered < finalExamData.length) {
+    const missing = finalExamData.length - answered;
+    if (!confirm('Tienes ' + missing + ' preguntas sin responder. ¿Deseas enviar el examen de todas formas?')) return;
+  }
+  examSubmitted = true;
+  document.getElementById('submit-btn').disabled = true;
+
+  let correct = 0;
+  finalExamData.forEach((q, i) => {
+    const userAns = examUserAnswers[i];
+    const card = document.getElementById('eq-' + i);
+    for (let oi = 0; oi < q.opts.length; oi++) {
+      const btn = document.getElementById('eq-opt-' + qi + '-' + oi);
+    }
+    // Mark each question
+    for (let oi = 0; oi < q.opts.length; oi++) {
+      const btn = document.getElementById('eq-opt-' + i + '-' + oi);
+      btn.classList.add('disabled');
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      btn.style.color = '';
+      if (oi === q.correct) btn.classList.add(userAns === q.correct ? 'correct' : 'reveal');
+      else if (oi === userAns && userAns !== q.correct) btn.classList.add('wrong');
+    }
+    if (userAns === q.correct) {
+      correct++;
+      card.classList.add('answered-ok');
+    } else {
+      card.classList.add('answered-fail');
+    }
+
+    // Add explanation
+    const expDiv = document.createElement('div');
+    expDiv.className = 'quiz-fb show ' + (userAns === q.correct ? 'ok' : 'fail');
+    expDiv.textContent = (userAns === q.correct ? '✓ ' : '✗ ') + q.exp;
+    card.appendChild(expDiv);
+  });
+
+  const pct = Math.round(correct / finalExamData.length * 100);
+  const passed = pct >= 70;
+  document.getElementById('exam-score-display').textContent = pct + '%';
+
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const resultsDiv = document.getElementById('results-screen');
+  resultsDiv.className = 'results-screen show';
+  resultsDiv.innerHTML = '<div class="cert-box" id="certificate">' +
+    '<div class="cert-header">' +
+    '<div class="cert-logo">FIBRAOPTICA·PRO — CERTIFICADO OFICIAL</div>' +
+    '<div class="cert-title">' + (passed ? 'CERTIFICADO' : 'RESULTADO') + '</div>' +
+    '<div class="cert-sub">' + (passed ? 'DE APROBACIÓN DEL CURSO' : 'DEL EXAMEN FINAL') + '</div>' +
+    '</div>' +
+    '<div class="cert-body">' +
+    '<div class="cert-score-ring" style="border-color:' + (passed ? '#00e5a0' : '#ff4444') + '">' +
+    '<div class="cert-score-num" style="color:' + (passed ? '#00e5a0' : '#ff4444') + '">' + pct + '</div>' +
+    '<div class="cert-score-label">% PUNTAJE</div>' +
+    '</div>' +
+    '<div style="font-size:12px;color:var(--text3);font-family:Share Tech Mono,monospace;margin-bottom:12px">Resultado: ' + correct + ' de ' + finalExamData.length + ' respuestas correctas</div>' +
+    (passed ?
+      '<div class="cert-pass">APROBADO CON ÉXITO</div>' +
+      '<div style="font-size:13px;color:var(--text3);margin:8px 0 16px">Se certifica que el participante</div>' +
+      '<div class="cert-name" style="font-family:Exo 2,sans-serif;font-style:italic">_________________________________</div>' +
+      '<div style="font-size:11px;color:var(--text3);margin-bottom:4px">Nombre del participante</div>' :
+      '<div class="cert-fail">NO APROBADO</div>' +
+      '<div style="font-size:13px;color:var(--text3);margin:12px 0">Se requiere un mínimo de 70% (14/20). Revisa el material y vuelve a intentarlo.</div>'
+    ) +
+    '<div class="cert-course">Ha completado el curso: <strong>Redes de Fibra Óptica: Domina la Conectividad del Futuro</strong></div>' +
+    '<div class="cert-instructor">' +
+    '<div class="ci-avatar"><svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="10" r="6" fill="#1a3040"/><ellipse cx="14" cy="9" rx="4" ry="5" fill="#c8956c"/><ellipse cx="14" cy="5" rx="5" ry="3" fill="#2a1a08"/><circle cx="11.5" cy="8" r="1" fill="#1a1a1a"/><circle cx="16.5" cy="8" r="1" fill="#1a1a1a"/><path d="M12 12 Q14 14 16 12" stroke="#8a4a2a" stroke-width="0.8" fill="none"/><rect x="8" y="16" width="12" height="12" rx="3" fill="#0a1929"/><rect x="10" y="18" width="8" height="3" rx="1" fill="#00d4ff" opacity="0.5"/></svg></div>' +
+    '<div class="ci-info"><div class="ci-name">Vladimir Sevillano Cruz</div><div class="ci-role">Instructor Especialista — Redes de Fibra Óptica</div></div>' +
+    '</div>' +
+    '<div class="cert-date">Fecha de emisión: ' + dateStr + ' · ID: FOC-' + Math.random().toString(36).substr(2,8).toUpperCase() + '</div>' +
+    '</div></div>' +
+    (passed ? '<button class="print-btn" onclick="window.print()">IMPRIMIR / GUARDAR CERTIFICADO</button>' : '') +
+    '<button class="retry-btn" onclick="retryExam()">REINTENTAR EXAMEN</button>';
+
+  resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function retryExam() {
+  examUserAnswers = new Array(finalExamData.length).fill(null);
+  examSubmitted = false;
+  document.getElementById('results-screen').className = 'results-screen';
+  document.getElementById('exam-score-display').textContent = '—';
+  document.getElementById('submit-btn').disabled = false;
+  buildExam();
+  document.getElementById('exam-questions-area').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Initialize
+for (let i = 0; i < 4; i++) {
+  buildQuiz(i);
+  buildDots(i);
+}
+</script>
+</body>
+</html>
