@@ -255,6 +255,25 @@ body::before{
 .eq-text{font-size:14px;color:var(--text);margin-bottom:12px;line-height:1.6}
 
 .exam-controls{display:flex;justify-content:center;gap:12px;padding:20px 28px;border-top:1px solid var(--border2);flex-wrap:wrap}
+.exam-start-card{max-width:760px;margin:24px auto;padding:24px;background:var(--bg-card);border:1px solid var(--border2);border-radius:10px}
+.exam-start-title{font-family:'Orbitron',monospace;font-size:16px;color:var(--accent);margin-bottom:8px}
+.exam-start-copy{color:var(--text2);font-size:13px;margin-bottom:18px}
+.participant-form{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:end}
+.participant-field label{display:block;font-size:11px;color:var(--text2);margin-bottom:6px}
+.participant-field input{width:100%;padding:11px 12px;border:1px solid var(--border2);border-radius:5px;background:var(--bg-deep);color:var(--text);font:inherit}
+.participant-field input:focus{outline:1px solid var(--accent);border-color:var(--accent)}
+.participant-form .submit-btn{grid-column:1/-1;justify-self:start}
+.exam-start-error{grid-column:1/-1;color:var(--red);font-size:12px;min-height:18px}
+.exam-history{max-width:1100px;margin:0 auto 28px;padding:0 28px}
+.exam-history h3{font-family:'Orbitron',monospace;color:var(--accent);font-size:13px;margin-bottom:10px}
+.exam-history-note{font-size:11px;color:var(--text3);margin-bottom:10px}
+.exam-history-wrap{overflow-x:auto;border:1px solid var(--border2);border-radius:8px}
+.exam-history table{width:100%;border-collapse:collapse;min-width:650px;background:var(--bg-card);font-size:12px}
+.exam-history th,.exam-history td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--border2)}
+.exam-history th{font-family:'Share Tech Mono',monospace;color:var(--text2);font-size:10px;font-weight:500}
+.exam-history td{color:var(--text)}
+.exam-history-empty{padding:14px;color:var(--text3);font-size:12px}
+.exam-session-banner{padding:10px 12px;margin-bottom:18px;border:1px solid var(--border2);border-radius:6px;background:var(--bg-panel);color:var(--text2);font-size:12px}
 .submit-btn{
   font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:0.1em;
   padding:12px 32px;border-radius:6px;border:1px solid var(--purple);
@@ -310,6 +329,7 @@ body::before{
   padding:10px 24px;border-radius:6px;border:1px solid var(--accent3);
   background:rgba(0,212,255,0.08);color:var(--accent);cursor:pointer;margin-top:16px;margin-left:10px;transition:all 0.2s
 }
+@media(max-width:640px){.participant-form{grid-template-columns:1fr}.participant-form .submit-btn{grid-column:1}.exam-start-card{margin:16px 12px;padding:18px}.exam-history{padding:0 12px}}
 @media print{.topbar,.sidebar,.nav-row,.exam-controls,.print-btn,.retry-btn{display:none!important}.cert-box{border:2px solid #888}}
 </style>
 </head>
@@ -715,19 +735,32 @@ body::before{
   <div class="exam-stats">
     <div class="estat"><div class="estat-val">20</div><div class="estat-label">Preguntas</div></div>
     <div class="estat"><div class="estat-val">4</div><div class="estat-label">Módulos</div></div>
-    <div class="estat"><div class="estat-val">70%</div><div class="estat-label">Para aprobar</div></div>
+    <div class="estat"><div class="estat-val">80%</div><div class="estat-label">Para aprobar</div></div>
     <div class="estat"><div class="estat-val" id="exam-score-display">—</div><div class="estat-label">Tu puntaje</div></div>
   </div>
 </div>
 
 <div class="results-screen" id="results-screen"></div>
 
-<div class="exam-area" id="exam-questions-area">
+<section class="exam-start-card" id="exam-start">
+  <div class="exam-start-title">Datos del participante</div>
+  <p class="exam-start-copy">Ingresa tu nombre y cédula para iniciar. Se permiten hasta 3 intentos en cada realización del examen.</p>
+  <form class="participant-form" onsubmit="startExam(event)">
+    <div class="participant-field"><label for="participant-name">Nombre completo</label><input id="participant-name" name="participant-name" autocomplete="name" maxlength="100" required></div>
+    <div class="participant-field"><label for="participant-id">Cédula</label><input id="participant-id" name="participant-id" autocomplete="off" inputmode="numeric" maxlength="30" required></div>
+    <div class="exam-start-error" id="exam-start-error" role="alert"></div>
+    <button class="submit-btn" type="submit">INICIAR EXAMEN</button>
+  </form>
+</section>
+
+<div class="exam-area" id="exam-questions-area" style="display:none">
+  <div class="exam-session-banner" id="exam-session-banner"></div>
   <div id="exam-qs"></div>
 </div>
-<div class="exam-controls" id="exam-controls">
+<div class="exam-controls" id="exam-controls" style="display:none">
   <button class="submit-btn" id="submit-btn" onclick="submitExam()">ENVIAR EXAMEN Y OBTENER CERTIFICADO</button>
 </div>
+<section class="exam-history" id="exam-history" aria-live="polite"></section>
 </div>
 
 </div>
@@ -799,6 +832,11 @@ const finalExamData = [
 
 let examUserAnswers = new Array(finalExamData.length).fill(null);
 let examSubmitted = false;
+let examStarted = false;
+let examAttemptsUsed = 0;
+let examParticipant = null;
+const MAX_EXAM_ATTEMPTS = 3;
+const EXAM_HISTORY_KEY = 'fibraOpticaExamHistoryV1';
 
 function buildQuiz(modIdx) {
   const container = document.getElementById('quiz-section-' + modIdx);
@@ -884,7 +922,7 @@ function goMod(idx) {
   document.getElementById('snav' + currentMod).classList.add('active');
   document.querySelectorAll('.tab-btn')[currentMod].classList.add('active');
   for (let i = 0; i < 4; i++) buildDots(i);
-  if (idx === 4 && !examSubmitted) buildExam();
+  if (idx === 4 && examStarted && !examSubmitted) document.getElementById('exam-questions-area').style.display = 'block';
   window.scrollTo(0, 0);
 }
 
@@ -908,6 +946,87 @@ function buildExam() {
   container.innerHTML = html;
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
+function startExam(event) {
+  event.preventDefault();
+  const name = document.getElementById('participant-name').value.trim();
+  const participantId = document.getElementById('participant-id').value.trim();
+  const error = document.getElementById('exam-start-error');
+  if (!name || !participantId) {
+    error.textContent = 'Completa el nombre y la cédula para iniciar.';
+    return;
+  }
+  error.textContent = '';
+  examParticipant = { name, id: participantId };
+  examAttemptsUsed = 0;
+  examStarted = true;
+  examSubmitted = false;
+  examUserAnswers = new Array(finalExamData.length).fill(null);
+  document.getElementById('exam-start').style.display = 'none';
+  document.getElementById('exam-questions-area').style.display = 'block';
+  document.getElementById('exam-controls').style.display = 'flex';
+  document.getElementById('results-screen').className = 'results-screen';
+  document.getElementById('exam-score-display').textContent = '—';
+  document.getElementById('exam-session-banner').textContent = 'Participante: ' + name + ' · Cédula: ' + participantId + ' · Intento 1 de ' + MAX_EXAM_ATTEMPTS;
+  document.getElementById('submit-btn').disabled = false;
+  buildExam();
+  document.getElementById('exam-questions-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function readExamHistory() {
+  try {
+    const stored = localStorage.getItem(EXAM_HISTORY_KEY);
+    const parsed = stored ? JSON.parse(stored) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveExamRecord(record) {
+  try {
+    const records = readExamHistory();
+    records.push(record);
+    localStorage.setItem(EXAM_HISTORY_KEY, JSON.stringify(records));
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+function renderExamHistory() {
+  const container = document.getElementById('exam-history');
+  if (!container) return;
+  const records = readExamHistory().slice().reverse();
+  container.innerHTML = '<h3>Registro local de examinados</h3><p class="exam-history-note">Los datos y puntajes se guardan únicamente en este navegador y dispositivo.</p>';
+  if (!records.length) {
+    container.insertAdjacentHTML('beforeend', '<div class="exam-history-wrap"><div class="exam-history-empty">Aún no hay resultados registrados.</div></div>');
+    return;
+  }
+  const table = document.createElement('table');
+  table.innerHTML = '<thead><tr><th>Nombre</th><th>Cédula</th><th>Puntaje</th><th>Resultado</th><th>Intento</th><th>Fecha</th></tr></thead>';
+  const body = document.createElement('tbody');
+  records.forEach(record => {
+    const row = document.createElement('tr');
+    const date = new Date(record.date);
+    const values = [record.name, record.id, record.score + '%', record.passed ? 'Aprobado' : 'No aprobado', record.attempt + '/' + MAX_EXAM_ATTEMPTS, isNaN(date.getTime()) ? '' : date.toLocaleString('es-CO')];
+    values.forEach(value => {
+      const cell = document.createElement('td');
+      cell.textContent = value == null ? '' : String(value);
+      row.appendChild(cell);
+    });
+    body.appendChild(row);
+  });
+  table.appendChild(body);
+  const wrap = document.createElement('div');
+  wrap.className = 'exam-history-wrap';
+  wrap.appendChild(table);
+  container.appendChild(wrap);
+}
+
 function examAnswer(qi, oi) {
   if (examSubmitted) return;
   // Deselect previous
@@ -928,6 +1047,7 @@ function examAnswer(qi, oi) {
 }
 
 function submitExam() {
+  if (!examStarted || examSubmitted || !examParticipant) return;
   const answered = examUserAnswers.filter(a => a !== null).length;
   if (answered < finalExamData.length) {
     const missing = finalExamData.length - answered;
@@ -965,19 +1085,22 @@ function submitExam() {
   });
 
   const pct = Math.round(correct / finalExamData.length * 100);
-  const passed = pct >= 70;
+  const passed = pct >= 80;
+  examAttemptsUsed++;
   document.getElementById('exam-score-display').textContent = pct + '%';
 
   const today = new Date();
   const dateStr = today.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+  const recordSaved = saveExamRecord({ name: examParticipant.name, id: examParticipant.id, score: pct, correct, total: finalExamData.length, passed, attempt: examAttemptsUsed, date: today.toISOString() });
+  renderExamHistory();
 
   const resultsDiv = document.getElementById('results-screen');
   resultsDiv.className = 'results-screen show';
   resultsDiv.innerHTML = '<div class="cert-box" id="certificate">' +
     '<div class="cert-header">' +
     '<div class="cert-logo">FIBRAOPTICA·PRO — CERTIFICADO OFICIAL</div>' +
-    '<div class="cert-title">' + (passed ? 'CERTIFICADO' : 'RESULTADO') + '</div>' +
-    '<div class="cert-sub">' + (passed ? 'DE APROBACIÓN DEL CURSO' : 'DEL EXAMEN FINAL') + '</div>' +
+    '<div class="cert-title">' + (passed ? 'APROBADO' : 'NO APROBADO') + '</div>' +
+    '<div class="cert-sub">RESULTADO DEL EXAMEN FINAL · MÍNIMO PARA APROBAR: 80%</div>' +
     '</div>' +
     '<div class="cert-body">' +
     '<div class="cert-score-ring" style="border-color:' + (passed ? '#00e5a0' : '#ff4444') + '">' +
@@ -985,35 +1108,53 @@ function submitExam() {
     '<div class="cert-score-label">% PUNTAJE</div>' +
     '</div>' +
     '<div style="font-size:12px;color:var(--text3);font-family:Share Tech Mono,monospace;margin-bottom:12px">Resultado: ' + correct + ' de ' + finalExamData.length + ' respuestas correctas</div>' +
-    (passed ?
-      '<div class="cert-pass">APROBADO CON ÉXITO</div>' +
-      '<div style="font-size:13px;color:var(--text3);margin:8px 0 16px">Se certifica que el participante</div>' +
-      '<div class="cert-name" style="font-family:Exo 2,sans-serif;font-style:italic">_________________________________</div>' +
-      '<div style="font-size:11px;color:var(--text3);margin-bottom:4px">Nombre del participante</div>' :
-      '<div class="cert-fail">NO APROBADO</div>' +
-      '<div style="font-size:13px;color:var(--text3);margin:12px 0">Se requiere un mínimo de 70% (14/20). Revisa el material y vuelve a intentarlo.</div>'
-    ) +
+    '<div class="' + (passed ? 'cert-pass' : 'cert-fail') + '">' + (passed ? 'APROBADO CON ÉXITO' : 'NO APROBADO · SE REQUIERE 80% O MÁS') + '</div>' +
+    '<div style="font-size:13px;color:var(--text3);margin:8px 0 16px">Participante</div>' +
+    '<div class="cert-name" style="font-family:Exo 2,sans-serif">' + escapeHtml(examParticipant.name) + '</div>' +
     '<div class="cert-course">Ha completado el curso: <strong>Redes de Fibra Óptica: Domina la Conectividad del Futuro</strong></div>' +
     '<div class="cert-instructor">' +
     '<div class="ci-avatar"><svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="10" r="6" fill="#1a3040"/><ellipse cx="14" cy="9" rx="4" ry="5" fill="#c8956c"/><ellipse cx="14" cy="5" rx="5" ry="3" fill="#2a1a08"/><circle cx="11.5" cy="8" r="1" fill="#1a1a1a"/><circle cx="16.5" cy="8" r="1" fill="#1a1a1a"/><path d="M12 12 Q14 14 16 12" stroke="#8a4a2a" stroke-width="0.8" fill="none"/><rect x="8" y="16" width="12" height="12" rx="3" fill="#0a1929"/><rect x="10" y="18" width="8" height="3" rx="1" fill="#00d4ff" opacity="0.5"/></svg></div>' +
     '<div class="ci-info"><div class="ci-name">Vladimir Sevillano Cruz</div><div class="ci-role">Instructor Especialista — Redes de Fibra Óptica</div></div>' +
     '</div>' +
-    '<div class="cert-date">Fecha de emisión: ' + dateStr + ' · ID: FOC-' + Math.random().toString(36).substr(2,8).toUpperCase() + '</div>' +
+    '<div class="cert-date">Fecha: ' + dateStr + ' · Intento ' + examAttemptsUsed + ' de ' + MAX_EXAM_ATTEMPTS + ' · ID: FOC-' + Math.random().toString(36).substr(2,8).toUpperCase() + '</div>' +
+    '<div class="cert-date">' + (recordSaved ? 'Resultado guardado en el registro local de este navegador.' : 'No fue posible guardar el resultado en el navegador; anótalo antes de cerrar la página.') + '</div>' +
     '</div></div>' +
     (passed ? '<button class="print-btn" onclick="window.print()">IMPRIMIR / GUARDAR CERTIFICADO</button>' : '') +
-    '<button class="retry-btn" onclick="retryExam()">REINTENTAR EXAMEN</button>';
+    (examAttemptsUsed < MAX_EXAM_ATTEMPTS ? '<button class="retry-btn" onclick="retryExam()">REPETIR EXAMEN · QUEDAN ' + (MAX_EXAM_ATTEMPTS - examAttemptsUsed) + '</button>' : '<button class="retry-btn" onclick="resetExamSession()">NUEVA REALIZACIÓN</button>');
 
+  document.getElementById('exam-controls').style.display = 'none';
   resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function retryExam() {
+  if (!examParticipant || !examSubmitted || examAttemptsUsed >= MAX_EXAM_ATTEMPTS) return;
   examUserAnswers = new Array(finalExamData.length).fill(null);
   examSubmitted = false;
   document.getElementById('results-screen').className = 'results-screen';
   document.getElementById('exam-score-display').textContent = '—';
+  document.getElementById('exam-session-banner').textContent = 'Participante: ' + examParticipant.name + ' · Cédula: ' + examParticipant.id + ' · Intento ' + (examAttemptsUsed + 1) + ' de ' + MAX_EXAM_ATTEMPTS;
+  document.getElementById('exam-questions-area').style.display = 'block';
+  document.getElementById('exam-controls').style.display = 'flex';
   document.getElementById('submit-btn').disabled = false;
   buildExam();
   document.getElementById('exam-questions-area').scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetExamSession() {
+  examUserAnswers = new Array(finalExamData.length).fill(null);
+  examSubmitted = false;
+  examStarted = false;
+  examAttemptsUsed = 0;
+  examParticipant = null;
+  document.getElementById('results-screen').className = 'results-screen';
+  document.getElementById('exam-score-display').textContent = '—';
+  document.getElementById('exam-questions-area').style.display = 'none';
+  document.getElementById('exam-controls').style.display = 'none';
+  document.getElementById('exam-start').style.display = 'block';
+  document.getElementById('participant-name').value = '';
+  document.getElementById('participant-id').value = '';
+  document.getElementById('exam-start-error').textContent = '';
+  document.getElementById('exam-start').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // Initialize
@@ -1021,6 +1162,7 @@ for (let i = 0; i < 4; i++) {
   buildQuiz(i);
   buildDots(i);
 }
+renderExamHistory();
 </script>
 </body>
 </html>
