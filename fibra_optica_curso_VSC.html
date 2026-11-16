@@ -940,9 +940,6 @@ function submitExam() {
   finalExamData.forEach((q, i) => {
     const userAns = examUserAnswers[i];
     const card = document.getElementById('eq-' + i);
-    for (let oi = 0; oi < q.opts.length; oi++) {
-      const btn = document.getElementById('eq-opt-' + qi + '-' + oi);
-    }
     // Mark each question
     for (let oi = 0; oi < q.opts.length; oi++) {
       const btn = document.getElementById('eq-opt-' + i + '-' + oi);
