@@ -318,6 +318,11 @@ body::before{
 .cert-date{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);margin-top:16px}
 .cert-pass{color:var(--green);font-family:'Orbitron',monospace;font-size:13px;letter-spacing:0.1em}
 .cert-fail{color:var(--red);font-family:'Orbitron',monospace;font-size:13px;letter-spacing:0.1em}
+.generated-certificate{max-width:1080px;margin:22px auto;padding:10px;background:#fff;border:1px solid var(--border2);border-radius:8px;box-shadow:0 12px 36px rgba(0,0,0,.25)}
+.generated-certificate img{display:block;width:100%;height:auto}
+.certificate-actions{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin:16px auto}
+.certificate-actions .print-btn{margin:0;text-decoration:none;display:inline-block}
+.exam-result-message{color:var(--text2);font-size:13px;margin:12px auto}
 .print-btn{
   font-family:'Orbitron',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;
   padding:10px 24px;border-radius:6px;border:1px solid var(--green2);
@@ -330,7 +335,7 @@ body::before{
   background:rgba(0,212,255,0.08);color:var(--accent);cursor:pointer;margin-top:16px;margin-left:10px;transition:all 0.2s
 }
 @media(max-width:640px){.participant-form{grid-template-columns:1fr}.participant-form .submit-btn{grid-column:1}.exam-start-card{margin:16px 12px;padding:18px}.exam-history{padding:0 12px}}
-@media print{.topbar,.sidebar,.nav-row,.exam-controls,.print-btn,.retry-btn{display:none!important}.cert-box{border:2px solid #888}}
+@media print{@page{size:A4 landscape;margin:0}body *{visibility:hidden!important}#certificate-print,#certificate-print *{visibility:visible!important}#certificate-print{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;max-width:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;display:flex!important;align-items:center;justify-content:center}#certificate-preview{width:100%!important;height:100%!important;max-height:100vh;object-fit:contain}.topbar,.sidebar,.nav-row,.exam-controls,.print-btn,.retry-btn{display:none!important}}
 </style>
 </head>
 <body>
@@ -837,6 +842,8 @@ let examAttemptsUsed = 0;
 let examParticipant = null;
 const MAX_EXAM_ATTEMPTS = 3;
 const EXAM_HISTORY_KEY = 'fibraOpticaExamHistoryV1';
+// Plantilla pública adaptada: Wikimedia Commons, Sec-cert-template.png, CC0 1.0.
+const CERTIFICATE_TEMPLATE_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1400\" height=\"990\" viewBox=\"0 0 1400 990\">\n<defs><linearGradient id=\"cyan\" x2=\"1\"><stop stop-color=\"#00d4ff\"/><stop offset=\"1\" stop-color=\"#00e5a0\"/></linearGradient><pattern id=\"grid\" width=\"28\" height=\"28\" patternUnits=\"userSpaceOnUse\"><path d=\"M28 0H0V28\" fill=\"none\" stroke=\"#00a9cb\" stroke-opacity=\".06\"/></pattern><filter id=\"shadow\" x=\"-.1\" y=\"-.1\" width=\"1.2\" height=\"1.2\"><feDropShadow dy=\"10\" stdDeviation=\"15\" flood-color=\"#06172a\" flood-opacity=\".14\"/></filter></defs>\n<rect width=\"1400\" height=\"990\" fill=\"#e9eef3\"/><rect x=\"35\" y=\"35\" width=\"1330\" height=\"920\" rx=\"16\" fill=\"#fbfcfe\" filter=\"url(#shadow)\"/><rect x=\"35\" y=\"35\" width=\"1330\" height=\"920\" rx=\"16\" fill=\"url(#grid)\"/><rect x=\"35\" y=\"35\" width=\"1330\" height=\"920\" rx=\"16\" fill=\"none\" stroke=\"#0b2941\" stroke-width=\"5\"/><rect x=\"51\" y=\"51\" width=\"1298\" height=\"888\" rx=\"10\" fill=\"none\" stroke=\"#00a9cb\" stroke-width=\"2\"/>\n<path d=\"M54 236H1346\" stroke=\"url(#cyan)\" stroke-width=\"5\"/>\n<g transform=\"translate(108 104)\"><text x=\"0\" y=\"32\" font-family=\"Arial,sans-serif\" font-size=\"28\" font-weight=\"700\" letter-spacing=\"2\" fill=\"#00d4ff\">FIBRA</text><text x=\"0\" y=\"63\" font-family=\"Arial,sans-serif\" font-size=\"28\" font-weight=\"700\" letter-spacing=\"2\" fill=\"#7aadcc\">OPTICA<tspan fill=\"#00d4ff\">·PRO</tspan></text><text x=\"1\" y=\"87\" font-family=\"Arial,sans-serif\" font-size=\"11\" letter-spacing=\"2.2\" fill=\"#537083\">FORMACIÓN EN REDES DE FIBRA ÓPTICA</text></g>\n<text x=\"700\" y=\"318\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"18\" font-weight=\"700\" letter-spacing=\"5\" fill=\"#00a9cb\">CONSTANCIA DE APROBACIÓN</text><text x=\"700\" y=\"380\" text-anchor=\"middle\" font-family=\"Georgia,serif\" font-size=\"42\" font-weight=\"700\" fill=\"#0b2941\">CERTIFICADO</text><text x=\"700\" y=\"430\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"19\" fill=\"#537083\">Se otorga a</text><text x=\"700\" y=\"493\" text-anchor=\"middle\" font-family=\"Georgia,serif\" font-size=\"38\" font-weight=\"700\" fill=\"#0b2941\">@@NAME@@</text><path d=\"M375 510H1025\" stroke=\"#00a9cb\" stroke-opacity=\".55\" stroke-width=\"2\"/>\n<text x=\"700\" y=\"548\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"16\" fill=\"#537083\">Documento de identidad: <tspan font-weight=\"700\" fill=\"#0b2941\">@@DOCUMENT@@</tspan></text><text x=\"700\" y=\"606\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"17\" fill=\"#537083\">Por haber aprobado con un puntaje mínimo de 80 % el curso</text><text x=\"700\" y=\"651\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"25\" font-weight=\"700\" fill=\"#0b2941\">REDES DE FIBRA ÓPTICA</text><text x=\"700\" y=\"681\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"17\" fill=\"#00a9cb\">Domina la conectividad del futuro</text>\n  <text x=\"700\" y=\"724\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"16\" font-weight=\"700\" fill=\"#0b2941\">Puntaje obtenido: @@SCORE@@</text>\n<g transform=\"translate(1170 125)\"><rect x=\"-10\" y=\"-8\" width=\"120\" height=\"142\" rx=\"16\" fill=\"#0b2941\"/><circle cx=\"50\" cy=\"58\" r=\"53\" fill=\"none\" stroke=\"#00d4ff\" stroke-opacity=\".55\" stroke-width=\"1.5\"/><g transform=\"translate(0 0) scale(1.1)\">\n      <!-- Body suit -->\n      <rect x=\"20\" y=\"65\" width=\"60\" height=\"55\" rx=\"8\" fill=\"#0a1929\"/>\n      <rect x=\"20\" y=\"65\" width=\"60\" height=\"55\" rx=\"8\" fill=\"none\" stroke=\"#00d4ff\" stroke-width=\"1\" opacity=\"0.6\"/>\n      <!-- Chest panel -->\n      <rect x=\"30\" y=\"72\" width=\"40\" height=\"8\" rx=\"3\" fill=\"#0f2337\"/>\n      <rect x=\"33\" y=\"74\" width=\"10\" height=\"4\" rx=\"2\" fill=\"#00d4ff\" opacity=\"0.7\"/>\n      <rect x=\"46\" y=\"74\" width=\"6\" height=\"4\" rx=\"2\" fill=\"#00e5a0\" opacity=\"0.6\"/>\n      <rect x=\"55\" y=\"74\" width=\"6\" height=\"4\" rx=\"2\" fill=\"#00d4ff\" opacity=\"0.4\"/>\n      <!-- Badge -->\n      <rect x=\"30\" y=\"84\" width=\"18\" height=\"22\" rx=\"3\" fill=\"#0f2337\"/>\n      <rect x=\"31\" y=\"85\" width=\"16\" height=\"20\" rx=\"2\" fill=\"none\" stroke=\"#00d4ff\" stroke-width=\"0.5\" opacity=\"0.5\"/>\n      <text x=\"39\" y=\"97\" text-anchor=\"middle\" font-family=\"monospace\" font-size=\"5\" fill=\"#00d4ff\">V·S·C</text>\n      <!-- Arms -->\n      <rect x=\"2\" y=\"68\" width=\"14\" height=\"30\" rx=\"7\" fill=\"#0a1929\"/>\n      <rect x=\"2\" y=\"68\" width=\"14\" height=\"30\" rx=\"7\" fill=\"none\" stroke=\"#00d4ff\" stroke-width=\"0.5\" opacity=\"0.4\"/>\n      <rect x=\"84\" y=\"68\" width=\"14\" height=\"30\" rx=\"7\" fill=\"#0a1929\"/>\n      <rect x=\"84\" y=\"68\" width=\"14\" height=\"30\" rx=\"7\" fill=\"none\" stroke=\"#00d4ff\" stroke-width=\"0.5\" opacity=\"0.4\"/>\n      <!-- Neck -->\n      <rect x=\"40\" y=\"56\" width=\"20\" height=\"12\" rx=\"4\" fill=\"#1a3040\"/>\n      <!-- Head -->\n      <ellipse cx=\"50\" cy=\"40\" rx=\"26\" ry=\"28\" fill=\"#1a3040\"/>\n      <ellipse cx=\"50\" cy=\"40\" rx=\"26\" ry=\"28\" fill=\"none\" stroke=\"#00d4ff\" stroke-width=\"0.8\" opacity=\"0.3\"/>\n      <!-- Face skin -->\n      <ellipse cx=\"50\" cy=\"42\" rx=\"18\" ry=\"20\" fill=\"#c8956c\"/>\n      <!-- Hair -->\n      <ellipse cx=\"50\" cy=\"24\" rx=\"19\" ry=\"10\" fill=\"#2a1a08\"/>\n      <rect x=\"32\" y=\"22\" width=\"36\" height=\"10\" rx=\"3\" fill=\"#2a1a08\"/>\n      <!-- Eyes -->\n      <ellipse cx=\"43\" cy=\"38\" rx=\"3.5\" ry=\"4\" fill=\"#1a1a1a\"/>\n      <ellipse cx=\"57\" cy=\"38\" rx=\"3.5\" ry=\"4\" fill=\"#1a1a1a\"/>\n      <circle cx=\"44\" cy=\"37\" r=\"1.2\" fill=\"#fff\" opacity=\"0.8\"/>\n      <circle cx=\"58\" cy=\"37\" r=\"1.2\" fill=\"#fff\" opacity=\"0.8\"/>\n      <!-- Eyebrows -->\n      <path d=\"M39 33 Q43 31 47 33\" stroke=\"#2a1a08\" stroke-width=\"1.5\" fill=\"none\" stroke-linecap=\"round\"/>\n      <path d=\"M53 33 Q57 31 61 33\" stroke=\"#2a1a08\" stroke-width=\"1.5\" fill=\"none\" stroke-linecap=\"round\"/>\n      <!-- Nose -->\n      <path d=\"M48 42 Q50 46 52 42\" stroke=\"#b0785a\" stroke-width=\"1\" fill=\"none\"/>\n      <!-- Smile -->\n      <path d=\"M44 51 Q50 56 56 51\" stroke=\"#8a4a2a\" stroke-width=\"1.5\" fill=\"none\" stroke-linecap=\"round\"/>\n      <!-- Headset -->\n      <path d=\"M26 38 Q26 18 50 18 Q74 18 74 38\" stroke=\"#00d4ff\" stroke-width=\"2\" fill=\"none\"/>\n      <rect x=\"22\" y=\"36\" width=\"8\" height=\"12\" rx=\"4\" fill=\"#0a1929\"/>\n      <rect x=\"22\" y=\"36\" width=\"8\" height=\"12\" rx=\"4\" fill=\"none\" stroke=\"#00d4ff\" stroke-width=\"1\"/>\n      <rect x=\"70\" y=\"36\" width=\"8\" height=\"12\" rx=\"4\" fill=\"#0a1929\"/>\n      <rect x=\"70\" y=\"36\" width=\"8\" height=\"12\" rx=\"4\" fill=\"none\" stroke=\"#00d4ff\" stroke-width=\"1\"/>\n      <!-- Mic boom -->\n      <path d=\"M22 48 L14 56\" stroke=\"#00d4ff\" stroke-width=\"1\" opacity=\"0.7\"/>\n      <circle cx=\"13\" cy=\"57\" r=\"3\" fill=\"#0a1929\" stroke=\"#00d4ff\" stroke-width=\"1\"/>\n      <!-- Scan line effect on face -->\n      <rect x=\"32\" y=\"38\" width=\"36\" height=\"1\" fill=\"#00d4ff\" opacity=\"0.08\"/>\n      <rect x=\"32\" y=\"44\" width=\"36\" height=\"1\" fill=\"#00d4ff\" opacity=\"0.06\"/>\n    </g></g>\n<g transform=\"translate(138 780)\"><path d=\"M0 0H1124\" stroke=\"#d4e1e9\" stroke-width=\"1.5\"/><path d=\"M60 38H310\" stroke=\"#0b2941\" stroke-width=\"1.5\"/><text x=\"185\" y=\"60\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"15\" font-weight=\"700\" fill=\"#0b2941\">Vladimir Sevillano Cruz</text><text x=\"185\" y=\"83\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#537083\">Instructor del curso</text><text x=\"940\" y=\"57\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"13\" fill=\"#537083\">Fecha de emisión</text><text x=\"940\" y=\"82\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"15\" font-weight=\"700\" fill=\"#0b2941\">@@DATE@@</text><text x=\"1110\" y=\"119\" text-anchor=\"end\" font-family=\"monospace\" font-size=\"11\" fill=\"#7890a0\">Código: @@CERTIFICATE_ID@@</text></g>\n<g transform=\"translate(1160 818)\"><circle cx=\"38\" cy=\"38\" r=\"36\" fill=\"#e8f7fa\" stroke=\"#00a9cb\" stroke-width=\"2\"/><circle cx=\"38\" cy=\"38\" r=\"28\" fill=\"none\" stroke=\"#00a9cb\" stroke-opacity=\".55\" stroke-dasharray=\"2 4\"/><path d=\"M24 39l9 9 20-22\" fill=\"none\" stroke=\"#00a9cb\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><text x=\"38\" y=\"90\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"9\" font-weight=\"700\" letter-spacing=\"1\" fill=\"#0b2941\">80%+</text></g>\n<text x=\"700\" y=\"910\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"10\" letter-spacing=\"1.4\" fill=\"#7890a0\">REDES DE FIBRA ÓPTICA · CONSTANCIA GENERADA AL APROBAR LA EVALUACIÓN</text></svg>";
 
 function buildQuiz(modIdx) {
   const container = document.getElementById('quiz-section-' + modIdx);
@@ -948,6 +955,17 @@ function buildExam() {
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
+function createCertificateSvg(score, date, certificateId) {
+  const values = {
+    NAME: examParticipant.name,
+    DOCUMENT: examParticipant.id,
+    SCORE: score + ' %',
+    DATE: date,
+    CERTIFICATE_ID: certificateId
+  };
+  return CERTIFICATE_TEMPLATE_SVG.replace(/@@(NAME|DOCUMENT|SCORE|DATE|CERTIFICATE_ID)@@/g, (_match, key) => escapeHtml(values[key]));
 }
 
 function startExam(event) {
@@ -1091,36 +1109,31 @@ function submitExam() {
 
   const today = new Date();
   const dateStr = today.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
-  const recordSaved = saveExamRecord({ name: examParticipant.name, id: examParticipant.id, score: pct, correct, total: finalExamData.length, passed, attempt: examAttemptsUsed, date: today.toISOString() });
+  const certificateId = passed ? 'FOP-' + Math.random().toString(36).substr(2, 8).toUpperCase() : null;
+  const certificateSvg = passed ? createCertificateSvg(pct, dateStr, certificateId) : null;
+  const recordSaved = saveExamRecord({ name: examParticipant.name, id: examParticipant.id, score: pct, correct, total: finalExamData.length, passed, attempt: examAttemptsUsed, date: today.toISOString(), certificateId });
   renderExamHistory();
 
   const resultsDiv = document.getElementById('results-screen');
   resultsDiv.className = 'results-screen show';
-  resultsDiv.innerHTML = '<div class="cert-box" id="certificate">' +
-    '<div class="cert-header">' +
-    '<div class="cert-logo">FIBRAOPTICA·PRO — CERTIFICADO OFICIAL</div>' +
-    '<div class="cert-title">' + (passed ? 'APROBADO' : 'NO APROBADO') + '</div>' +
-    '<div class="cert-sub">RESULTADO DEL EXAMEN FINAL · MÍNIMO PARA APROBAR: 80%</div>' +
-    '</div>' +
-    '<div class="cert-body">' +
-    '<div class="cert-score-ring" style="border-color:' + (passed ? '#00e5a0' : '#ff4444') + '">' +
-    '<div class="cert-score-num" style="color:' + (passed ? '#00e5a0' : '#ff4444') + '">' + pct + '</div>' +
-    '<div class="cert-score-label">% PUNTAJE</div>' +
-    '</div>' +
-    '<div style="font-size:12px;color:var(--text3);font-family:Share Tech Mono,monospace;margin-bottom:12px">Resultado: ' + correct + ' de ' + finalExamData.length + ' respuestas correctas</div>' +
-    '<div class="' + (passed ? 'cert-pass' : 'cert-fail') + '">' + (passed ? 'APROBADO CON ÉXITO' : 'NO APROBADO · SE REQUIERE 80% O MÁS') + '</div>' +
-    '<div style="font-size:13px;color:var(--text3);margin:8px 0 16px">Participante</div>' +
-    '<div class="cert-name" style="font-family:Exo 2,sans-serif">' + escapeHtml(examParticipant.name) + '</div>' +
-    '<div class="cert-course">Ha completado el curso: <strong>Redes de Fibra Óptica: Domina la Conectividad del Futuro</strong></div>' +
-    '<div class="cert-instructor">' +
-    '<div class="ci-avatar"><svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="10" r="6" fill="#1a3040"/><ellipse cx="14" cy="9" rx="4" ry="5" fill="#c8956c"/><ellipse cx="14" cy="5" rx="5" ry="3" fill="#2a1a08"/><circle cx="11.5" cy="8" r="1" fill="#1a1a1a"/><circle cx="16.5" cy="8" r="1" fill="#1a1a1a"/><path d="M12 12 Q14 14 16 12" stroke="#8a4a2a" stroke-width="0.8" fill="none"/><rect x="8" y="16" width="12" height="12" rx="3" fill="#0a1929"/><rect x="10" y="18" width="8" height="3" rx="1" fill="#00d4ff" opacity="0.5"/></svg></div>' +
-    '<div class="ci-info"><div class="ci-name">Vladimir Sevillano Cruz</div><div class="ci-role">Instructor Especialista — Redes de Fibra Óptica</div></div>' +
-    '</div>' +
-    '<div class="cert-date">Fecha: ' + dateStr + ' · Intento ' + examAttemptsUsed + ' de ' + MAX_EXAM_ATTEMPTS + ' · ID: FOC-' + Math.random().toString(36).substr(2,8).toUpperCase() + '</div>' +
-    '<div class="cert-date">' + (recordSaved ? 'Resultado guardado en el registro local de este navegador.' : 'No fue posible guardar el resultado en el navegador; anótalo antes de cerrar la página.') + '</div>' +
-    '</div></div>' +
-    (passed ? '<button class="print-btn" onclick="window.print()">IMPRIMIR / GUARDAR CERTIFICADO</button>' : '') +
-    (examAttemptsUsed < MAX_EXAM_ATTEMPTS ? '<button class="retry-btn" onclick="retryExam()">REPETIR EXAMEN · QUEDAN ' + (MAX_EXAM_ATTEMPTS - examAttemptsUsed) + '</button>' : '<button class="retry-btn" onclick="resetExamSession()">NUEVA REALIZACIÓN</button>');
+  const attemptButton = examAttemptsUsed < MAX_EXAM_ATTEMPTS
+    ? '<button class="retry-btn" onclick="retryExam()">REPETIR EXAMEN · QUEDAN ' + (MAX_EXAM_ATTEMPTS - examAttemptsUsed) + '</button>'
+    : '<button class="retry-btn" onclick="resetExamSession()">NUEVA REALIZACIÓN</button>';
+
+  if (passed) {
+    const certificateUrl = URL.createObjectURL(new Blob([certificateSvg], { type: 'image/svg+xml;charset=utf-8' }));
+    const fileName = 'certificado-' + certificateId.toLowerCase() + '.svg';
+    resultsDiv.innerHTML = '<div class="generated-certificate" id="certificate-print"><img id="certificate-preview" alt="Certificado de aprobación de ' + escapeHtml(examParticipant.name) + '"></div>' +
+      '<p class="exam-result-message">Resultado: ' + correct + ' de ' + finalExamData.length + ' respuestas correctas (' + pct + '%). APROBADO.</p>' +
+      '<div class="certificate-actions"><a class="print-btn" href="' + certificateUrl + '" download="' + fileName + '">DESCARGAR CERTIFICADO</a><button class="print-btn" onclick="window.print()">IMPRIMIR / GUARDAR PDF</button></div>' +
+      '<p class="exam-history-note">' + (recordSaved ? 'El resultado también quedó en el registro local de este navegador.' : 'No fue posible guardar el resultado en el registro local.') + '</p>' + attemptButton;
+    document.getElementById('certificate-preview').src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(certificateSvg);
+  } else {
+    resultsDiv.innerHTML = '<div class="cert-box"><div class="cert-header"><div class="cert-logo">FIBRAOPTICA·PRO</div><div class="cert-title">NO APROBADO</div><div class="cert-sub">SE REQUIERE UN PUNTAJE MÍNIMO DE 80%</div></div>' +
+      '<div class="cert-body"><div class="cert-score-ring" style="border-color:#ff4444"><div class="cert-score-num" style="color:#ff4444">' + pct + '</div><div class="cert-score-label">% PUNTAJE</div></div>' +
+      '<div class="cert-fail">' + correct + ' de ' + finalExamData.length + ' respuestas correctas</div></div></div>' +
+      '<p class="exam-history-note">' + (recordSaved ? 'El resultado quedó en el registro local. No se generó certificado porque no alcanzó el puntaje mínimo.' : 'No se pudo guardar el resultado. No se generó certificado porque no alcanzó el puntaje mínimo.') + '</p>' + attemptButton;
+  }
 
   document.getElementById('exam-controls').style.display = 'none';
   resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
