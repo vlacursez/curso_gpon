@@ -52,6 +52,7 @@ body::before{
 }
 .tab-btn:hover{color:var(--text2);border-color:var(--border2)}
 .tab-btn.active{background:var(--bg-element);color:var(--accent);border-color:var(--accent3)}
+.tab-btn:disabled{opacity:.32;cursor:not-allowed}
 .prog-wrap{display:flex;align-items:center;gap:8px;min-width:160px;justify-content:flex-end}
 .prog-text{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text3)}
 .prog-bar{width:80px;height:3px;background:var(--bg-element);border-radius:2px;overflow:hidden}
@@ -72,6 +73,7 @@ body::before{
   border-left:2px solid transparent;transition:all 0.2s;border-right:none
 }
 .nav-item:hover{background:rgba(0,212,255,0.04)}
+.nav-item.is-locked,.final-nav.is-locked{opacity:.38;cursor:not-allowed}
 .nav-item.active{background:rgba(0,212,255,0.08);border-left-color:var(--accent)}
 .nav-item.locked{opacity:0.35;cursor:not-allowed}
 .nav-num{
@@ -159,6 +161,7 @@ body::before{
 .concept-card:hover{border-color:var(--accent3);background:var(--bg-element)}
 .topic-link{display:inline-flex;align-items:center;gap:5px;margin-top:12px;padding:7px 10px;border:1px solid rgba(0,212,255,.34);border-radius:5px;color:var(--accent);font:600 10px 'Share Tech Mono',monospace;letter-spacing:.04em;text-decoration:none;transition:background .2s,border-color .2s}
 .topic-link:hover,.topic-link:focus-visible{background:rgba(0,212,255,.1);border-color:var(--accent);outline:none}
+.topic-link.is-visited{color:var(--green);border-color:rgba(0,229,160,.42);background:rgba(0,229,160,.07)}
 .certificate-reset-note{margin:12px auto;color:var(--text3);font-size:12px;text-align:center;max-width:680px;line-height:1.6}
 .cc-icon{margin-bottom:8px;display:flex;justify-content:center}
 .cc-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px}
@@ -226,6 +229,8 @@ body::before{
 .navbtn.primary{background:rgba(0,212,255,0.12);border-color:var(--accent);color:var(--accent)}
 .navbtn.primary:hover{background:rgba(0,212,255,0.2)}
 .navbtn:disabled{opacity:0.25;cursor:default}
+.module-gate-status{padding:10px 28px;color:var(--text2);font-size:12px;text-align:center;background:rgba(6,17,31,.7);border-top:1px solid var(--border2)}
+.module-gate-status.complete{color:var(--green)}
 .dots{display:flex;gap:6px;align-items:center}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--bg-element);border:1px solid var(--border2);transition:all 0.3s}
 .dot.active{background:var(--accent);border-color:var(--accent);box-shadow:0 0 6px var(--accent)}
@@ -508,11 +513,12 @@ body::before{
 
   <div id="sc-m0" class="score-card"></div>
   <div class="quiz-section" id="quiz-section-0"></div>
+  <div class="module-gate-status" id="module-gate-status-0" role="status" aria-live="polite"></div>
 </div>
 <div class="nav-row">
   <button class="navbtn" onclick="prevMod()" id="btn-prev-0" disabled>← Anterior</button>
   <div class="dots" id="dots-0"></div>
-  <button class="navbtn primary" onclick="nextMod()">Siguiente →</button>
+  <button class="navbtn primary" id="next-mod-0" onclick="nextMod()" disabled>Siguiente →</button>
 </div>
 </div>
 
@@ -575,11 +581,12 @@ body::before{
 
   <div id="sc-m1" class="score-card"></div>
   <div class="quiz-section" id="quiz-section-1"></div>
+  <div class="module-gate-status" id="module-gate-status-1" role="status" aria-live="polite"></div>
 </div>
 <div class="nav-row">
   <button class="navbtn" onclick="prevMod()">← Anterior</button>
   <div class="dots" id="dots-1"></div>
-  <button class="navbtn primary" onclick="nextMod()">Siguiente →</button>
+  <button class="navbtn primary" id="next-mod-1" onclick="nextMod()" disabled>Siguiente →</button>
 </div>
 </div>
 
@@ -652,11 +659,12 @@ body::before{
 
   <div id="sc-m2" class="score-card"></div>
   <div class="quiz-section" id="quiz-section-2"></div>
+  <div class="module-gate-status" id="module-gate-status-2" role="status" aria-live="polite"></div>
 </div>
 <div class="nav-row">
   <button class="navbtn" onclick="prevMod()">← Anterior</button>
   <div class="dots" id="dots-2"></div>
-  <button class="navbtn primary" onclick="nextMod()">Siguiente →</button>
+  <button class="navbtn primary" id="next-mod-2" onclick="nextMod()" disabled>Siguiente →</button>
 </div>
 </div>
 
@@ -717,11 +725,12 @@ body::before{
 
   <div id="sc-m3" class="score-card"></div>
   <div class="quiz-section" id="quiz-section-3"></div>
+  <div class="module-gate-status" id="module-gate-status-3" role="status" aria-live="polite"></div>
 </div>
 <div class="nav-row">
   <button class="navbtn" onclick="prevMod()">← Anterior</button>
   <div class="dots" id="dots-3"></div>
-  <button class="navbtn primary" onclick="goMod(4)">Ir al Examen Final →</button>
+  <button class="navbtn primary" id="next-mod-3" onclick="goMod(4)" disabled>Ir al Examen Final →</button>
 </div>
 </div>
 
@@ -769,6 +778,8 @@ const MODULES_COUNT = 5;
 let currentMod = 0;
 let moduleScores = [null, null, null, null];
 let quizAnswers = [{}, {}, {}, {}];
+const moduleTopicNames = [new Set(), new Set(), new Set(), new Set()];
+let visitedModuleTopics = [new Set(), new Set(), new Set(), new Set()];
 
 const quizData = [
   // Módulo 1
@@ -793,7 +804,7 @@ const quizData = [
     { q: "¿Cuál es el ángulo de corte correcto para preparar una fibra antes del empalme por fusión?", opts: ["45 grados", "30 grados", "60 grados", "90 grados (perpendicular)"], correct: 3, exp: "El corte debe ser perpendicular (90°) al eje de la fibra. Una desviación mayor a ±0.5° causa reflexiones y pérdida de señal significativa." },
     { q: "¿Cuál es la rutina recomendada antes de conectar dos conectores de fibra?", opts: ["Mirar la fibra a simple vista", "Inspeccionar, limpiar si hace falta y volver a inspeccionar", "Aplicar gel índice-matching", "Soplar con aire comprimido"], correct: 1, exp: "La FOA recomienda inspeccionar los extremos, limpiarlos con materiales diseñados para fibra si es necesario y volver a inspeccionar. Comprueba que la fibra no tenga luz activa antes de usar microscopios ópticos." },
     { q: "¿Qué describe FOCIS (TIA-604) para los conectores de fibra?", opts: ["La pérdida máxima de todo el enlace", "La interoperabilidad mecánica de conectores del mismo tipo", "El método de prueba de un OTDR", "La velocidad de los transceptores"], correct: 1, exp: "Las especificaciones FOCIS definen atributos físicos mínimos para que conectores compatibles del mismo tipo puedan acoplarse; no certifican por sí solas un enlace instalado." },
-    { q: "¿Qué significa una pérdida de retorno alta?", opts: ["Más potencia óptica reflejada hacia la fuente", "Menos potencia óptica reflejada hacia la fuente", "Mayor atenuación por kilómetro", "Que el medidor no está calibrado"], correct: 1, exp: "La pérdida de retorno expresa cuánta potencia se refleja respecto de la señal incidente: un valor alto en dB equivale a menos reflexión." }
+    { q: "¿En qué unidad muestra el medidor de potencia óptica el nivel absoluto de señal?", opts: ["dBm", "Kilómetros", "Ohmios", "Grados"], correct: 0, exp: "El medidor de potencia óptica suele mostrar niveles absolutos en dBm; también puede expresar potencia en mW o µW." }
   ]},
   // Módulo 4
   { questions: [
@@ -883,8 +894,8 @@ function quizAnswer(modIdx, qi, oi) {
     quizData[modIdx].questions.forEach((q, i) => { if (quizAnswers[modIdx][i] === q.correct) score++; });
     moduleScores[modIdx] = score;
     showModuleScore(modIdx, score, total);
-    updateProgress();
   }
+  refreshModuleGates();
 }
 
 function showModuleScore(modIdx, score, total) {
@@ -893,10 +904,6 @@ function showModuleScore(modIdx, score, total) {
   const pass = pct >= 60;
   sc.className = 'score-card show';
   sc.innerHTML = '<div class="sc-icon"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M3 9 L7 13 L15 5" stroke="' + (pass ? '#00e5a0' : '#ff4444') + '" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div><div class="sc-text">Quiz completado: <strong>' + score + '/' + total + ' correctas (' + pct + '%)</strong> — ' + (pass ? '¡Excelente dominio del módulo!' : 'Repasa el contenido antes del examen final.') + '</div>';
-  if (pass) {
-    document.getElementById('snav' + modIdx).classList.add('done');
-    document.getElementById('snum' + modIdx).textContent = '✓';
-  }
 }
 
 function buildDots(modIdx) {
@@ -911,13 +918,74 @@ function buildDots(modIdx) {
 }
 
 function updateProgress() {
-  const done = moduleScores.filter(s => s !== null).length;
+  const done = moduleScores.filter((_score, i) => isModuleComplete(i)).length;
   const pct = Math.round(done / 4 * 100);
   document.getElementById('prog-fill').style.width = pct + '%';
   document.getElementById('prog-text').textContent = pct + '%';
 }
 
+function isModuleComplete(modIdx) {
+  const topics = moduleTopicNames[modIdx];
+  const visited = visitedModuleTopics[modIdx];
+  const answeredCount = Object.keys(quizAnswers[modIdx]).length;
+  return topics.size > 0 && visited.size === topics.size &&
+    answeredCount === quizData[modIdx].questions.length && moduleScores[modIdx] !== null;
+}
+
+function canAccessModule(modIdx) {
+  for (let i = 0; i < Math.min(modIdx, 4); i++) {
+    if (!isModuleComplete(i)) return false;
+  }
+  return true;
+}
+
+function refreshModuleGates() {
+  for (let i = 0; i < 4; i++) {
+    const completed = isModuleComplete(i);
+    const visited = visitedModuleTopics[i].size;
+    const totalTopics = moduleTopicNames[i].size;
+    const answered = Object.keys(quizAnswers[i]).length;
+    const totalQuestions = quizData[i].questions.length;
+    const status = document.getElementById('module-gate-status-' + i);
+    status.classList.toggle('complete', completed);
+    status.textContent = completed
+      ? 'Módulo completado. Ya puedes avanzar; puedes regresar para repasar.'
+      : 'Para avanzar, abre todos los recursos de este módulo y responde el quiz completo. Temas revisados: ' + visited + '/' + totalTopics + ' · Preguntas respondidas: ' + answered + '/' + totalQuestions + '.';
+
+    const nextButton = document.getElementById('next-mod-' + i);
+    nextButton.disabled = !completed;
+    nextButton.setAttribute('aria-disabled', String(!completed));
+    nextButton.title = completed ? 'Avanzar al siguiente módulo' : 'Completa todos los recursos y las preguntas del quiz para avanzar';
+
+    const destination = i + 1;
+    const accessible = canAccessModule(destination);
+    const tab = document.querySelectorAll('.tab-btn')[destination];
+    tab.disabled = !accessible;
+    tab.setAttribute('aria-disabled', String(!accessible));
+    const sideNav = document.getElementById('snav' + destination);
+    sideNav.classList.toggle('is-locked', !accessible);
+    sideNav.setAttribute('aria-disabled', String(!accessible));
+
+    const moduleNav = document.getElementById('snav' + i);
+    moduleNav.classList.toggle('done', completed);
+    document.getElementById('snum' + i).textContent = completed ? '✓' : String(i + 1).padStart(2, '0');
+  }
+  document.getElementById('snav4').classList.toggle('is-locked', !canAccessModule(4));
+  document.getElementById('snav4').setAttribute('aria-disabled', String(!canAccessModule(4)));
+  updateProgress();
+}
+
 function goMod(idx) {
+  if (!Number.isInteger(idx) || idx < 0 || idx > 4) return;
+  if (idx > currentMod && !canAccessModule(idx)) {
+    let blockedModule = 0;
+    while (blockedModule < idx && isModuleComplete(blockedModule)) blockedModule++;
+    const remainingTopics = moduleTopicNames[blockedModule].size - visitedModuleTopics[blockedModule].size;
+    const remainingQuestions = quizData[blockedModule].questions.length - Object.keys(quizAnswers[blockedModule]).length;
+    alert('Completa primero el módulo ' + (blockedModule + 1) + ': revisa los ' + remainingTopics + ' temas pendientes y responde las ' + remainingQuestions + ' preguntas pendientes del quiz.');
+    return;
+  }
+  if (idx === currentMod) return;
   document.getElementById('mod' + currentMod).classList.remove('visible');
   document.getElementById('snav' + currentMod).classList.remove('active');
   document.querySelectorAll('.tab-btn')[currentMod].classList.remove('active');
@@ -930,7 +998,7 @@ function goMod(idx) {
   window.scrollTo(0, 0);
 }
 
-function nextMod() { if (currentMod < 4) goMod(currentMod + 1); }
+function nextMod() { if (currentMod < 4 && isModuleComplete(currentMod)) goMod(currentMod + 1); }
 function prevMod() { if (currentMod > 0) goMod(currentMod - 1); }
 
 function buildExam() {
@@ -983,14 +1051,24 @@ const topicStudyLinks = {
   '6G backhaul': ['https://www.itu.int/epublications/publication/itu-t-gstr-ion-2030-2025-10-technical-report-on-international-optical-networks-towards-2030-and-beyond', 'ITU-T · redes ópticas y transporte IMT-2030']
 };
 
-function addStudyLink(container, url, label) {
+function addStudyLink(container, url, label, topicName, moduleIndex) {
+  if (moduleIndex < 0 || moduleIndex > 3) return;
+  moduleTopicNames[moduleIndex].add(topicName);
   const link = document.createElement('a');
   link.className = 'topic-link';
   link.href = url;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
+  link.dataset.topicLabel = label;
   link.textContent = 'ESTUDIAR TEMA ↗';
   link.setAttribute('aria-label', 'Estudiar: ' + label + ' (abre en una pestaña nueva)');
+  link.addEventListener('click', () => {
+    visitedModuleTopics[moduleIndex].add(topicName);
+    link.classList.add('is-visited');
+    link.textContent = '✓ TEMA REVISADO';
+    link.setAttribute('aria-label', 'Recurso abierto: ' + label);
+    refreshModuleGates();
+  });
   container.appendChild(link);
 }
 
@@ -998,16 +1076,27 @@ function addTopicStudyLinks() {
   document.querySelectorAll('.concept-card').forEach(card => {
     const name = card.querySelector('.cc-name');
     const resource = name && topicStudyLinks[name.textContent.trim()];
-    if (resource) addStudyLink(card, resource[0], resource[1]);
+    const screen = card.closest('.screen');
+    const moduleIndex = screen ? Number(screen.id.replace('mod', '')) : -1;
+    if (resource) addStudyLink(card, resource[0], resource[1], name.textContent.trim(), moduleIndex);
   });
   const diagramLinks = [
+    ['MONOMODO · 9µm', 'https://www.thefoa.org/tech/ref/basic/fiber.html', 'FOA · fibra monomodo'],
+    ['MULTIMODO · 50/62.5µm', 'https://www.thefoa.org/tech/ref/basic/fiber.html', 'FOA · fibra multimodo'],
+    ['Pelar', 'https://www.thefoa.org/tech/ref/install/tools.html', 'FOA · preparación y herramientas de fibra'],
+    ['Limpiar', 'https://www.thefoa.org/tech/ref/testing/test/scope.html', 'FOA · inspección y limpieza de conectores'],
+    ['Cortar', 'https://www.thefoa.org/tech/ref/basic/term.html', 'FOA · preparación de fibra para terminación'],
+    ['Empalmar', 'https://www.thefoa.org/tech/ref/OSP/term.html', 'FOA · empalmes de fusión y mecánicos'],
+    ['Verificar', 'https://www.thefoa.org/tech/ref/basic/test.html', 'FOA · pruebas de enlaces ópticos'],
     ['SDM — División espacial', 'https://opg.optica.org/abstract.cfm?uri=OFC-2026-M4E.6', 'Optica · investigación sobre multiplexación espacial'],
     ['Modulación coherente', 'https://www.ciena.com/insights/what-is/what-is-coherent-optics', 'Ciena · óptica coherente']
   ];
   document.querySelectorAll('.vis-box').forEach(box => {
+    const screen = box.closest('.screen');
+    const moduleIndex = screen ? Number(screen.id.replace('mod', '')) : -1;
     box.querySelectorAll('div').forEach(title => {
       const resource = diagramLinks.find(item => item[0] === title.textContent.trim());
-      if (resource) addStudyLink(title.parentElement, resource[1], resource[2]);
+      if (resource) addStudyLink(title.parentElement, resource[1], resource[2], resource[0], moduleIndex);
     });
   });
 }
@@ -1025,6 +1114,10 @@ function createCertificateSvg(score, date, certificateId) {
 
 function startExam(event) {
   event.preventDefault();
+  if (!canAccessModule(4)) {
+    document.getElementById('exam-start-error').textContent = 'Completa los recursos y el quiz de los cuatro módulos antes de iniciar el examen final.';
+    return;
+  }
   const name = document.getElementById('participant-name').value.trim();
   const participantId = document.getElementById('participant-id').value.trim();
   const error = document.getElementById('exam-start-error');
@@ -1070,6 +1163,10 @@ function examAnswer(qi, oi) {
 
 function submitExam() {
   if (!examStarted || examSubmitted || !examParticipant) return;
+  if (!canAccessModule(4)) {
+    alert('Debes completar los cuatro módulos y sus quizzes antes de presentar el examen final.');
+    return;
+  }
   const answered = examUserAnswers.filter(a => a !== null).length;
   if (answered < finalExamData.length) {
     const missing = finalExamData.length - answered;
@@ -1197,6 +1294,12 @@ function resetExamSession() {
   document.getElementById('submit-btn').disabled = false;
   moduleScores = [null, null, null, null];
   quizAnswers = [{}, {}, {}, {}];
+  visitedModuleTopics = [new Set(), new Set(), new Set(), new Set()];
+  document.querySelectorAll('.topic-link').forEach(link => {
+    link.classList.remove('is-visited');
+    link.textContent = 'ESTUDIAR TEMA ↗';
+    link.setAttribute('aria-label', 'Estudiar: ' + link.dataset.topicLabel + ' (abre en una pestaña nueva)');
+  });
   for (let i = 0; i < 4; i++) {
     buildQuiz(i);
     const scoreCard = document.getElementById('sc-m' + i);
@@ -1206,7 +1309,7 @@ function resetExamSession() {
     document.getElementById('snum' + i).textContent = String(i + 1).padStart(2, '0');
     buildDots(i);
   }
-  updateProgress();
+  refreshModuleGates();
   if (currentMod !== 0) goMod(0);
   document.getElementById('exam-start').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
@@ -1217,6 +1320,7 @@ for (let i = 0; i < 4; i++) {
   buildQuiz(i);
   buildDots(i);
 }
+refreshModuleGates();
 </script>
 </body>
 </html>
